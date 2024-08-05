@@ -1,0 +1,34 @@
+@charset "utf-8";
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f4;
+}
+.button-container {
+    display: flex;
+    gap: 20px;
+}
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px; /* Largura do botão */
+    height: 250px; /* Altura do botão */
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+button:hover {
+    background-color: #0056b3;
+}
