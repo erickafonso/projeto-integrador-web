@@ -36,6 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Fecha a conexão
     $conn->close();
     $exibirMensagem = true;
+    if ($exibirMensagem) {
+        echo "<script>alert('$mensagem');</script>";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -45,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/cadastro.css">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Contador de gastos</title>
+    <title>Contador de forma de pagamento</title>
 </head>
 <body>
     <header>
@@ -64,9 +67,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </ul>
         </nav>
     </header>
-    <div class="form-container">
-        <h2>Cadastro de Pagamento</h2>
-        <form action="/enviar" method="post">
+    <div class="form-container"id="formContainer">
+        <h2>Cadastro de forma de pagamento</h2>
+        <form action="" method="post">
             <div class="form-group">
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" required>
@@ -77,5 +80,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
         </form>
     </div>
+    <script>
+        window.onload = function () {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.add('show'); // Adiciona a classe para a transição
+        };
+    </script>
 </body>
 </html>

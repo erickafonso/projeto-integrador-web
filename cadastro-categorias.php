@@ -36,6 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Fecha a conexão
     $conn->close();
     $exibirMensagem = true;
+    if ($exibirMensagem) {
+        echo "<script>alert('$mensagem');</script>";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -45,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/cadastro.css">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Contador de gastos</title>
+    <title>Contador de categoria</title>
 
     <script>
         // Função para mostrar o pop-up
@@ -71,8 +74,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </ul>
         </nav>
     </header>
-    <div class="form-container">
-        <h2>Cadastro de Pagamento</h2>
+    <div class="form-container" id="formContainer">
+        <h2>Cadastro de categoria</h2>
         <form action="" method="post">
             <div class="form-group">
                 <label for="nome">Nome:</label>
@@ -83,11 +86,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <button type="submit">Cadastrar</button>
             </div>
         </form>
-        <?php if ($exibirMensagem): ?>
-            <script>
-                mostrarMensagem("<?php echo $mensagem; ?>");
-            </script>
-        <?php endif; ?>
+        
     </div>
+    <script>
+        window.onload = function () {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.add('show'); // Adiciona a classe para a transição
+        };
+    </script>
 </body>
 </html>

@@ -1,24 +1,34 @@
 <?php
-include_once ('conexao/conexao.php'); // Inclui a conexão com o banco de dados
+include_once('conexao/conexao.php'); // Inclui a conexão com o banco de dados
 
 $mensagem = ''; // Variável para armazenar mensagens de feedback
 $exibirMensagem = false; // Variável para controlar a exibição do alert
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
-    $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
+    // Obtém os dados do formulário
+    $nome = $_POST['nome'] ?? '';
+    $valor = $_POST['valor'] ?? '';
+    $descricao = $_POST['descricao'] ?? '';
+    $data_pagamento = $_POST['data_pagamento'] ?? '';
+    $data_vencimento = $_POST['data_vencimento'] ?? '';
+    $categoria = $_POST['categoria'] ?? '';
+    $forma_pagamento = $_POST['forma_pagamento'] ?? '';
+
     // Validação
-    if (empty($nome)) {
-        $mensagem = "O campo 'nome' é obrigatório.";
+    if (empty($nome) || empty($valor) || empty($descricao) || empty($data_pagamento) || empty($data_vencimento) || empty($categoria) || empty($forma_pagamento)) {
+        $mensagem = "Todos os campos são obrigatórios.";
     } else {
+
+        $idFormaPagamento = getIdFormaPagamento($conn, $forma_pagamento);
+        echo"<br>String forma de pagamento:". $forma_pagamento;
+        echo"<br>Int forma de pagamento:". $idFormaPagamento;
+        echo"<br><br>";
+        $idCategoria = getIdCategoria($conn, $categoria);
+        echo"<br>String categoria:". $categoria;
+        echo"<br>Int categoria:". $idCategoria;
+        echo"<br><br>";
         // Prepara a consulta SQL usando prepared statements
-        $sql = $conn->prepare("INSERT INTO categoria (nome, valor, descricao, 
-        data-pagamento, data-vencimento, categoria, forma-pagamento ) VALUES (?, ? , ?, ?, ?, ?, ?)");
+        $sql = $conn->prepare("INSERT INTO conta (nome, valor, descricao, dataPagamento, dataVencimento, categoria, formaPagamento) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
         // Verifica se a preparação foi bem-sucedida
         if (!$sql) {
@@ -26,11 +36,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit;
         }
 
-        $sql->bind_param("s", $nome);
+        // Vincula os parâmetros
+        $sql->bind_param("sdsssss", $nome, $valor, $descricao, $data_pagamento, $data_vencimento, $idCategoria, $idFormaPagamento);
 
         // Executa a consulta e verifica o sucesso
         if ($sql->execute()) {
-            $mensagem = "Categoria cadastrada com sucesso!";
+            $mensagem = "Conta cadastrada com sucesso!";
         } else {
             $mensagem = "Erro: " . $sql->error;
         }
@@ -40,9 +51,63 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Fecha a conexão
-    $conn->close();
+   // $conn->close();
     $exibirMensagem = true;
+    if ($exibirMensagem) {
+        echo "<script>alert('$mensagem');</script>";
+    }
 }
+
+// Funções para buscar IDs de categoria e forma de pagamento
+function getIdCategoria($conn, $nome) {
+    $id_categoria = 1;
+    $sql = "SELECT idCategoria FROM categoria WHERE nome = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $nome);
+    $stmt->execute();
+    $stmt->bind_result($id_categoria);
+    $stmt->fetch();
+    $stmt->close();
+    return $id_categoria ?? 1; // Retorna 1 se não encontrar
+}
+
+function getIdFormaPagamento($conn, $nome) {
+    $id_forma_pagamento = 1;
+    $sql = "SELECT idFormaPagamento FROM formaPagamento WHERE nome = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $nome);
+    $stmt->execute();
+    $stmt->bind_result($id_forma_pagamento);
+    $stmt->fetch();
+    $stmt->close();
+    return $id_forma_pagamento ?? 1; // Retorna 1 se não encontrar
+}
+
+// Preencher os combo boxes
+function preencherComboBoxFormaPagamento($conn) {
+    $sql = "SELECT idFormaPagamento, nome FROM formaPagamento";
+    $result = $conn->query($sql);
+    $formas_pagamento = [];
+    while ($row = $result->fetch_assoc()) {
+        $formas_pagamento[] = $row;
+    }
+    return $formas_pagamento;
+}
+
+function preencherComboBoxCategoria($conn) {
+    $sql = "SELECT idCategoria, nome FROM categoria";
+    $result = $conn->query($sql);
+    $categorias = [];
+    while ($row = $result->fetch_assoc()) {
+        $categorias[] = $row;
+    }
+    return $categorias;
+}
+
+$formas_pagamento = preencherComboBoxFormaPagamento($conn);
+$categorias = preencherComboBoxCategoria($conn);
+
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -51,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/cadastro.css">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Contador de gastos</title>
+    <title>Contador de conta</title>
 </head>
 <body>
     <header>
@@ -70,14 +135,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </ul>
         </nav>
     </header>
-    <div class="form-container">
-        <h2>Cadastro de Pagamento</h2>
-        <form action="/enviar" method="post">
+    <div class="form-container"id="formContainer">
+        <h2>Cadastro de conta</h2>
+        <form action="" method="post">
             <div class="form-group">
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" required>
             </div>
             <div class="form-group">
+            
                 <label for="valor">Valor:</label>
                 <input type="number" id="valor" name="valor" step="0.01" required>
             </div>
@@ -97,26 +163,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <label for="categoria">Categoria:</label>
                 <select id="categoria" name="categoria" required>
                     <option value="">Selecione uma categoria</option>
-                    <option value="alimentacao">Alimentação</option>
-                    <option value="transporte">Transporte</option>
-                    <option value="saude">Saúde</option>
-                    <option value="entretenimento">Entretenimento</option>
+                    <?php foreach ($categorias as $cat): ?>
+                        <option value="<?php echo $cat['nome']; ?>"><?php echo $cat['nome']; ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="form-group">
                 <label for="forma-pagamento">Forma de Pagamento:</label>
                 <select id="forma-pagamento" name="forma_pagamento" required>
                     <option value="">Selecione uma forma de pagamento</option>
-                    <option value="credito">Crédito</option>
-                    <option value="debito">Débito</option>
-                    <option value="dinheiro">Dinheiro</option>
-                    <option value="transferencia">Transferência</option>
+                    <?php foreach ($formas_pagamento as $fp): ?>
+                        <option value="<?php echo $fp['nome']; ?>"><?php echo $fp['nome']; ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="form-group">
                 <button type="submit">Cadastrar</button>
             </div>
         </form>
+       
     </div>
+    <script>
+        window.onload = function () {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.classList.add('show'); // Adiciona a classe para a transição
+        };
+    </script>
 </body>
 </html>

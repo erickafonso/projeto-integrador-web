@@ -34,5 +34,17 @@
         </a>
         
         </div>
+        <script>
+            window.onload = function () {
+                    console.log("Window loaded");
+                    const buttons = document.querySelectorAll('.button-container a');
+                    buttons.forEach((button, index) => {
+                        setTimeout(() => {
+                            console.log("Showing button:", index);
+                            button.classList.add('show');
+                        }, index * 200); // Delay for each button
+                    });
+                };
+        </script>
 </body>
 </html>

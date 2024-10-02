@@ -45,3 +45,33 @@ nav a {
 nav a:hover {
     text-decoration: underline;
 }
+.button-container a {
+    display: inline-block;
+    margin: 10px;
+    opacity: 0; /* Start invisible */
+    transform: translateY(20px); /* Start slightly lower */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Transition for opacity and position */
+}
+
+.button-container a.show {
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Move to original position */
+}
+
+.form-container {
+    opacity: 0; /* Começar invisível */
+    transform: translateY(20px); /* Começar um pouco mais baixo */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Transição para opacidade e posição */
+    margin: 50px auto; /* Centralizar */
+    max-width: 400px; /* Limitar largura */
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra para efeito de profundidade */
+}
+
+.form-container.show {
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Mover para a posição original */
+}
