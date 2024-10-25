@@ -13,7 +13,7 @@
 
     //Dados conexão bd local
     $servidor = 'localhost';
-    $banco = 'condominio';
+    $banco = 'contador';
     $usuario = 'root';
     $senha = '';
 
@@ -30,7 +30,7 @@
     $email_sistema = 'cralves@gmail.com';
     $telefone_sistema = '(51) 99149-9128';
 
-    $query = $pdo->query("SELECT * FROM config");
+   /* $query = $pdo->query("SELECT * FROM config");
     $res = $query->fetchAll(PDO::FETCH_ASSOC);
     $linhas = @count($res);
     if($linhas == 0){
@@ -62,5 +62,5 @@
         exit();
         }
 
-    }
+    }*/
     ?>
