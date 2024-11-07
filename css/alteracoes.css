@@ -1,0 +1,120 @@
+/* Resetando margens e paddings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Definindo a fonte padrão e o espaçamento */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fc;
+    color: #333;
+    padding: 20px;
+}
+
+
+#conteudo{
+    margin-top: 50px;
+}
+
+
+/* Cabeçalho */
+
+
+
+h1 {
+    font-size: 2rem;
+    color: #007bff;
+    margin-bottom: 10px;  /* Ajuste a margem inferior se necessário */
+    text-align: center;
+}
+
+/* Navegação */
+
+
+/* Tabela */
+table {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+td input[type="text"] {
+    padding: 5px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 150px;
+    margin-right: 10px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #36577D;
+}
+
+/* Formulário de ação dentro da tabela */
+form {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* Estilizando os botões para alterar e deletar */
+button[type="submit"] {
+    font-size: 1rem;
+}
+
+button[type="submit"]:focus {
+    outline: none;
+}
+
+/* Estilos extras para melhorar o layout */
+input[type="text"] {
+    font-size: 1rem;
+    color: #333;
+}
+
+/* Melhoria do layout responsivo */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem;
+    }
+
+    td input[type="text"], button {
+        font-size: 0.9rem;
+    }
+
+    
+}

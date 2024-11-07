@@ -25,13 +25,31 @@ $categorias = $categoriaModel->listar();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/cadastro.css">
-    <link rel="stylesheet" href="css/styles.css">
-   <!-- <link rel="stylesheet" href="css/inside-pages.css">-->
+  <!--  <link rel="stylesheet" href="css/cadastro.css">
+    <link rel="stylesheet" href="css/styles.css">-->
+    <link rel="stylesheet" href="css/alteracoes.css">
+    <link rel="stylesheet" href="css/nav.css">
 
     <title>Manutenção de Categorias</title>
 </head>
 <body>
+<header>
+        <nav id="navMenu">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a>|</a></li>
+                <li><a href="contas.html">Contas</a></li>
+                <li><a>|</a></li>
+                <li><a href="despesas.html">Despesas</a></li>
+                <li><a>|</a></li>
+                <li><a href="formaPagamento.html">Formas de pagamento</a></li>
+                <li><a>|</a></li>
+                <li><a href="categorias.html">Categorias</a></li>
+                <li><a>|</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div id="conteudo">
     <h1>Manutenção de Categorias</h1>
     <table border="1">
         <tr>
@@ -57,5 +75,6 @@ $categorias = $categoriaModel->listar();
         </tr>
         <?php endforeach; ?>
     </table>
+        </div>
 </body>
 </html>
