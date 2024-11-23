@@ -1,24 +1,22 @@
 <?php
 include ('usuario/conexao.php'); // Inclui o arquivo de conexão
-include('modelo/FormaPagamento.php'); // Inclui o modelo FormaPagamento
+include ('modelo/FormaPagamento.php'); // Inclui o modelo FormaPagamento
 
 if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
-$formapagamentoModel = new FormaPagamento($pdo);
+$formaPagamentoModel = new FormaPagamento($pdo);
 
-// Processa a alteração ou exclusão
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
-        $formapagamentoModel->alterar($_POST['idFormaPagamento'], $_POST['nome']);
+        $formaPagamentoModel->alterar($_POST['idFormaPagamento'], $_POST['nome']);
     } elseif (isset($_POST['deletar'])) {
-        $formapagamentoModel->deletar($_POST['idFormaPagamento']);
+        $formaPagamentoModel->deletar($_POST['idFormaPagamento']);
     }
 }
 
-// Lista todas as formas de pagamento
-$formaspagamento = $formapagamentoModel->listar();
+$formasPagamento = $formaPagamentoModel->listar();
 ?>
 
 <!DOCTYPE html>
@@ -32,19 +30,20 @@ $formaspagamento = $formapagamentoModel->listar();
 </head>
 <body>
 <header>
-    <nav id="navMenu">
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a>|</a></li>
-            <li><a href="contas.html">Contas</a></li>
-            <li><a>|</a></li>
-            <li><a href="despesas.html">Despesas</a></li>
-            <li><a>|</a></li>
-            <li><a href="formaPagamento.html">Formas de pagamento</a></li>
-            <li><a>|</a></li>
-            <li><a href="categorias.html">Categorias</a></li>
-        </ul>
-    </nav>
+        <nav id="navMenu">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a>|</a></li>
+                <li><a href="contas.html">Contas</a></li>
+                <li><a>|</a></li>
+                <li><a href="despesas.html">Despesas</a></li>
+                <li><a>|</a></li>
+                <li><a href="formaPagamento.html">Formas de pagamento</a></li>
+                <li><a>|</a></li>
+                <li><a href="categorias.html">Categorias</a></li>
+                <li><a>|</a></li>
+            </ul>
+        </nav>
 </header>
 
 <div id="conteudo">
@@ -55,22 +54,22 @@ $formaspagamento = $formapagamentoModel->listar();
             <th>Nome</th>
             <th>Ações</th>
         </tr>
-        <?php foreach ($formaspagamento as $forma): ?>
+        <?php foreach ($formasPagamento as $formaPagamento): ?>
         <tr>
-            <td><?php echo $forma['idFormaPagamento']; ?></td>
-            <td><?php echo $forma['nome']; ?></td>
+            <td><?php echo $formaPagamento['idFormaPagamento']; ?></td>
+            <td><?php echo $formaPagamento['nome']; ?></td>
             <td>
-                <!-- Formulário para alterar o nome da forma de pagamento -->
+                <!-- Formulário de alteração -->
                 <form method="POST" style="display:inline;">
-                    <input type="hidden" name="idFormaPagamento" value="<?php echo $forma['idFormaPagamento']; ?>">
-                    <input type="text" name="nome" value="<?php echo $forma['nome']; ?>">
-                    <button type="submit" name="alterar">Alterar</button>
+                    <input type="hidden" name="idFormaPagamento" value="<?php echo $formaPagamento['idFormaPagamento']; ?>">
+                    <input type="text" name="nome" value="<?php echo $formaPagamento['nome']; ?>">
+                    <button type="submit" class="btn-alterar" name="alterar">Alterar</button>
                 </form>
                 
-                <!-- Formulário para deletar a forma de pagamento -->
+                <!-- Formulário de deleção -->
                 <form method="POST" style="display:inline;">
-                    <input type="hidden" name="idFormaPagamento" value="<?php echo $forma['idFormaPagamento']; ?>">
-                    <button type="submit" name="deletar">Deletar</button>
+                    <input type="hidden" name="idFormaPagamento" value="<?php echo $formaPagamento['idFormaPagamento']; ?>">
+                    <button type="submit" class="btn-deletar" name="deletar">Deletar</button>
                 </form>
             </td>
         </tr>

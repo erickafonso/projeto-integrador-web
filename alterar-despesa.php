@@ -1,12 +1,20 @@
 <?php
 include('usuario/conexao.php');  // Inclui o arquivo de conexão com o banco de dados
 include('modelo/Despesa.php');   // Inclui o modelo da tabela Despesa
+include('modelo/Categoria.php'); // Inclui o modelo da tabela Categoria
+include('modelo/FormaPagamento.php'); // Inclui o modelo da tabela FormaPagamento
 
 if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
 $despesaModel = new Despesa($pdo);  // Cria uma instância do modelo Despesa
+$categoriaModel = new Categoria($pdo);  // Cria uma instância do modelo Categoria
+$formaPagamentoModel = new FormaPagamento($pdo); // Cria uma instância do modelo FormaPagamento
+
+// Recupera as listas de categorias e formas de pagamento
+$categorias = $categoriaModel->listar();
+$formasPagamento = $formaPagamentoModel->listar();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
@@ -68,22 +76,73 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
             <td><?php echo number_format($despesa['valor'], 2, ',', '.'); ?></td>
             <td><?php echo $despesa['descricao']; ?></td>
             <td><?php echo date('d/m/Y', strtotime($despesa['dataPagamento'])); ?></td>
-            <td><?php echo $despesa['categoria']; ?></td>
-            <td><?php echo $despesa['formaPagamento']; ?></td>
             <td>
+                <?php
+                    // Substituir o valor numérico pela categoria correspondente
+                    $categoriaNome = '';
+                    foreach ($categorias as $categoria) {
+                        if ($categoria['idCategoria'] == $despesa['categoria']) {
+                            $categoriaNome = $categoria['nome'];
+                            break;
+                        }
+                    }
+                    echo $categoriaNome;
+                ?>
+            </td>
+            <td>
+                <?php
+                    // Substituir o valor numérico pela forma de pagamento correspondente
+                    $formaPagamentoNome = '';
+                    foreach ($formasPagamento as $forma) {
+                        if ($forma['idFormaPagamento'] == $despesa['formaPagamento']) {
+                            $formaPagamentoNome = $forma['nome'];
+                            break;
+                        }
+                    }
+                    echo $formaPagamentoNome;
+                ?>
+            </td>
+            <td>
+                <!-- Formulário para Alterar ou Deletar -->
                 <form method="POST" style="display:inline;">
-                    <input type="hidden" name="idDespesa" value="<?php echo $despesa['idDespesa']; ?>">
-                    <input type="text" name="nome" value="<?php echo $despesa['nome']; ?>" required>
-                    <input type="number" step="0.01" name="valor" value="<?php echo $despesa['valor']; ?>" required>
-                    <input type="text" name="descricao" value="<?php echo $despesa['descricao']; ?>">
-                    <input type="date" name="dataPagamento" value="<?php echo $despesa['dataPagamento']; ?>" required>
-                    <input type="number" name="categoria" value="<?php echo $despesa['categoria']; ?>" required>
-                    <input type="number" name="formaPagamento" value="<?php echo $despesa['formaPagamento']; ?>" required>
-                    <button type="submit" name="alterar">Alterar</button>
-                </form>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="idDespesa" value="<?php echo $despesa['idDespesa']; ?>">
-                    <button type="submit" name="deletar">Deletar</button>
+                <div class="input-group">
+                    <div class="input-container">
+                        <input type="hidden" name="idDespesa" value="<?php echo $despesa['idDespesa']; ?>">
+
+                        <!-- Inputs para alteração -->
+                        <input type="text" name="nome" value="<?php echo $despesa['nome']; ?>" required>
+                        <input type="number" step="0.01" name="valor" value="<?php echo $despesa['valor']; ?>" required>
+                        <input type="text" name="descricao" value="<?php echo $despesa['descricao']; ?>">
+                        </div>
+                        <div class="input-container">
+                        <input type="date" name="dataPagamento" value="<?php echo $despesa['dataPagamento']; ?>" required>
+                        </div>
+                        <!-- Combo Box Categoria -->
+                        <div class="input-container">
+                        <select name="categoria" required>
+                            <?php foreach ($categorias as $categoria): ?>
+                                <option value="<?php echo $categoria['idCategoria']; ?>" <?php echo ($categoria['idCategoria'] == $despesa['categoria']) ? 'selected' : ''; ?>>
+                                    <?php echo $categoria['nome']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        
+                        <!-- Combo Box Forma de Pagamento -->
+                        <select name="formaPagamento" required>
+                            <?php foreach ($formasPagamento as $forma): ?>
+                                <option value="<?php echo $forma['idFormaPagamento']; ?>" <?php echo ($forma['idFormaPagamento'] == $despesa['formaPagamento']) ? 'selected' : ''; ?>>
+                                    <?php echo $forma['nome']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="button-container">
+                        <button type="submit" name="alterar" class="btn-alterar">Alterar</button>
+                        <button type="submit" name="deletar" class="btn-deletar">Deletar</button>
+                    </div>
+                    </div>
                 </form>
             </td>
         </tr>

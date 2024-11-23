@@ -65,11 +65,11 @@ $categorias = $categoriaModel->listar();
                 <form method="POST" style="display:inline;">
                     <input type="hidden" name="idCategoria" value="<?php echo $categoria['idCategoria']; ?>">
                     <input type="text" name="nome" value="<?php echo $categoria['nome']; ?>">
-                    <button type="submit" name="alterar">Alterar</button>
+                    <button type="submit" class="btn-alterar" name="alterar">Alterar</button>
                 </form>
                 <form method="POST" style="display:inline;">
                     <input type="hidden" name="idCategoria" value="<?php echo $categoria['idCategoria']; ?>">
-                    <button type="submit" name="deletar">Deletar</button>
+                    <button type="submit" class="btn-deletar"name="deletar">Deletar</button>
                 </form>
             </td>
         </tr>

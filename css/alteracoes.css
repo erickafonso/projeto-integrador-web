@@ -62,28 +62,9 @@ tr:hover {
     background-color: #f1f1f1;
 }
 
-td input[type="text"] {
-    padding: 5px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 150px;
-    margin-right: 10px;
-}
 
-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
 
-button:hover {
-    background-color: #36577D;
-}
+
 
 /* Formulário de ação dentro da tabela */
 form {
@@ -100,21 +81,141 @@ button[type="submit"]:focus {
     outline: none;
 }
 
-/* Estilos extras para melhorar o layout */
-input[type="text"] {
+input[type="number"], input[type="date"], input[type="text"] {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
     font-size: 1rem;
-    color: #333;
+    max-width: 18ch; /* Garantindo que o campo de número tenha a mesma largura do campo de texto */
+    box-sizing: border-box; /* Para garantir que o padding seja incluído no tamanho do campo */
+    appearance: none;
+  
+}
+input[type="number"] {
+    -moz-appearance: textfield; /* Para Firefox */
+    -webkit-appearance: none; /* Para Webkit (Chrome, Safari, etc.) */
+    appearance: none; /* Para navegadores modernos */
 }
 
-/* Melhoria do layout responsivo */
-@media (max-width: 768px) {
-    table {
-        font-size: 0.9rem;
-    }
+/* Para remover os botões de incremento/decremento nos navegadores Webkit (Chrome, Safari, Edge) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 
-    td input[type="text"], button {
-        font-size: 0.9rem;
-    }
+/* Para o Firefox (remover o spinner de número) */
+input[type="number"]::-moz-appearance: textfield;
+/* Estilo adicional para quando o campo estiver em foco */
+input[type="text"]:focus, input[type="number"]:focus {
+    border-color: #66afe9;
+    outline: none;
+    box-shadow: 0 0 8px rgba(102, 175, 233, .6);
+}
 
-    
+/* Estilo geral para a célula da coluna "Ações" */
+table td.acoes {
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px;
+}
+
+/* Container principal para os inputs e botões (organiza tudo na mesma linha) */
+.input-group {
+    display: flex;
+    justify-content: space-between; /* Alinha os inputs à esquerda e os botões à direita */
+    gap: 15px; /* Espaçamento entre os grupos de inputs */
+    width: 100%;
+    align-items: center;
+}
+
+/* Container individual para cada grupo de inputs */
+.input-container {
+    display: flex;
+    gap: 10px; /* Espaçamento entre os inputs dentro de cada container */
+    flex-wrap: wrap; /* Permite que os inputs "quebrem" a linha se necessário */
+    justify-content: center;
+    width: 70%;
+}
+
+/* Estilo para os inputs */
+.input-container input {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 100%; /* Faz os inputs ocuparem toda a largura disponível */
+    max-width: 200px; /* Limita a largura máxima de cada input */
+    box-sizing: border-box;
+}
+
+
+/* Estilo de foco para os campos de input */
+input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus {
+    border-color: #66afe9;
+    outline: none;
+    box-shadow: 0 0 8px rgba(102, 175, 233, .6);
+}
+
+/* Container para os botões de ação (Alterar e Deletar) */
+.button-container {
+    display: flex;
+    flex-direction: column; /* Organiza os botões em coluna */
+    gap: 10px; /* Espaçamento entre os botões */
+    align-items: center; /* Alinha os botões ao centro */
+}
+
+/* Estilizando os botões */
+.btn-alterar, .btn-deletar {
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto;
+}
+
+/* Cor de fundo para o botão de "Alterar" */
+.btn-alterar {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+}
+
+/* Cor de fundo para o botão de "Deletar" */
+.btn-deletar {
+    background-color: #f44336; /* Vermelho */
+    color: white;
+}
+
+/* Efeito ao passar o mouse (hover) nos botões */
+.btn-alterar:hover {
+    background-color: #45a049;
+    transform: translateY(-2px); /* Leve elevação */
+}
+
+.btn-deletar:hover {
+    background-color: #e53935;
+    transform: translateY(-2px); /* Leve elevação */
+}
+
+/* Efeito ao pressionar o botão (click) */
+.btn-alterar:active, .btn-deletar:active {
+    transform: translateY(2px); /* Efeito de pressão */
+}
+
+/* Estilo do botão de deletar com uma cor mais suave ao passar o mouse */
+.btn-deletar:focus, .btn-alterar:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+select {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 100%; /* Faz o select ocupar toda a largura disponível */
+    max-width: 200px; /* Limita a largura máxima de cada select */
+    box-sizing: border-box;
 }
