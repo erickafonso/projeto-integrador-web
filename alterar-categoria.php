@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
+    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    exit;
+}
 include ('usuario/conexao.php'); // Inclui o arquivo de conexão
 
 include ('modelo/Categoria.php'); // Inclui o modelo Categoria

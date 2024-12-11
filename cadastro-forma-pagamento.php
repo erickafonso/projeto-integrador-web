@@ -1,4 +1,17 @@
 <?php
+
+session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
+    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    exit;
+}
+
+// O restante do código da página pode continuar aqui...
+
+
 include_once ('conexao/conexao.php'); // Inclui a conexão com o banco de dados
 
 $mensagem = ''; // Variável para armazenar mensagens de feedback

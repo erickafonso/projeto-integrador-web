@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
+    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    exit;
+}
 include('usuario/conexao.php');  // Inclui o arquivo de conexão com o banco de dados
 include('modelo/Despesa.php');   // Inclui o modelo da tabela Despesa
 include('modelo/Categoria.php'); // Inclui o modelo da tabela Categoria
@@ -14,7 +22,7 @@ $formaPagamentoModel = new FormaPagamento($pdo); // Cria uma instância do model
 
 // Recupera as listas de categorias e formas de pagamento
 $categorias = $categoriaModel->listar();
-$formasPagamento = $formaPagamentoModel->listar();
+$formasPagamento = $formaPagamentoModel->listar($_SESSION['idUsuario']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {

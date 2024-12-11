@@ -1,4 +1,13 @@
 <?php
+session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
+    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    exit;
+}
+
 include ('usuario/conexao.php'); // Inclui o arquivo de conexão
 include ('modelo/FormaPagamento.php'); // Inclui o modelo FormaPagamento
 
@@ -6,17 +15,21 @@ if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
+// Cria uma instância da classe FormaPagamento
 $formaPagamentoModel = new FormaPagamento($pdo);
 
+// Verifica se o formulário foi enviado (alteração ou exclusão)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
-        $formaPagamentoModel->alterar($_POST['idFormaPagamento'], $_POST['nome']);
+        $formaPagamentoModel->alterar($_POST['idFormaPagamento'], $_POST['nome'], $_SESSION['idUsuario']);
     } elseif (isset($_POST['deletar'])) {
-        $formaPagamentoModel->deletar($_POST['idFormaPagamento']);
+        $formaPagamentoModel->deletar($_POST['idFormaPagamento'], $_SESSION['idUsuario']);
     }
 }
 
-$formasPagamento = $formaPagamentoModel->listar();
+// Lista as formas de pagamento do usuário logado
+$formasPagamento = $formaPagamentoModel->listar($_SESSION['idUsuario']);
+
 ?>
 
 <!DOCTYPE html>
