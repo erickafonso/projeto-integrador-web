@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 session_start();
 
 // Verifica se o usuário está logado
@@ -11,7 +10,6 @@ if (!isset($_SESSION['idUsuario'])) {
 
 // O restante do código da página pode continuar aqui...
 
-
 include_once ('conexao/conexao.php'); // Inclui a conexão com o banco de dados
 
 $mensagem = ''; // Variável para armazenar mensagens de feedback
@@ -19,13 +17,14 @@ $exibirMensagem = false; // Variável para controlar a exibição do alert
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nome = isset($_POST['nome']) ? $_POST['nome'] : '';
+    $idUsuario = $_SESSION['idUsuario']; // Pega o idUsuario da sessão
 
     // Validação
     if (empty($nome)) {
         $mensagem = "O campo 'nome' é obrigatório.";
     } else {
         // Prepara a consulta SQL usando prepared statements
-        $sql = $conn->prepare("INSERT INTO formapagamento (nome) VALUES (?)");
+        $sql = $conn->prepare("INSERT INTO formapagamento (nome, idUsuario) VALUES (?, ?)");
 
         // Verifica se a preparação foi bem-sucedida
         if (!$sql) {
@@ -33,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit;
         }
 
-        $sql->bind_param("s", $nome);
+        $sql->bind_param("si", $nome, $idUsuario); // Adicionamos o idUsuario à consulta (usando "i" para integer)
 
         // Executa a consulta e verifica o sucesso
         if ($sql->execute()) {
