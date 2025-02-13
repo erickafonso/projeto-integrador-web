@@ -21,72 +21,52 @@ $categoria = new Categoria($pdo);
 $formaPagamentoModel = new FormaPagamento($pdo);
 // Chama a função para obter os nomes das categorias com os IDs como índice
 $nomesCategorias = $categoria->getNomesComIds();
-$formas = $formaPagamentoModel->getFormasComIds($_SESSION['idUsuario']);
+$formas = $formaPagamentoModel->getFormasComIds();
 // Exibe os nomes das categorias com os IDs como índice
 
 $contaModel = new Conta($pdo);
 
+// Processa a alteração ou exclusão
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
-        // Chama a função de alterar conta
-        $despesaModel->alterar($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento']);
+        // Lógica de alteração da conta
+        if (isset($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], 
+                  $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento'])) {
+
+            // Validar categoria, etc.
+            // ...
+
+            // Chamar método de alteração
+            $contaModel->alterar(
+                $_POST['idConta'],
+                $_POST['nome'],
+                $_POST['valor'],
+                $_POST['descricao'],
+                $_POST['dataPagamento'],
+                $_POST['dataVencimento'],
+                $_POST['categoria'], // Agora o valor vem diretamente do formulário
+                $_POST['formaPagamento']
+            );
+        } else {
+            echo "Erro: Todos os campos devem ser preenchidos!";
+        }
     } elseif (isset($_POST['deletar'])) {
-        // Chama a função de deletar conta
-        $despesaModel->deletar($_POST['idConta']);
+        // Lógica para deletar a conta
+        if (isset($_POST['idConta']) && is_numeric($_POST['idConta'])) {
+            $idConta = (int) $_POST['idConta'];  // Garantir que idConta seja numérico
+            
+            // Chamar método de deletação
+            $contaModel->deletar($idConta);
+        } else {
+            echo "Erro: ID da conta inválido!";
+        }
     }
 }
-
-
-
-
-// // Processa a alteração ou exclusão
-// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//     if (isset($_POST['alterar'])) {
-//         // Lógica de alteração da conta
-//         if (isset($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], 
-//                   $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento'])) {
-
-//             // Validar categoria, etc.
-//             // ...
-
-//             // Chamar método de alteração
-//             $contaModel->alterar(
-//                 $_POST['idConta'],
-//                 $_POST['nome'],
-//                 $_POST['valor'],
-//                 $_POST['descricao'],
-//                 $_POST['dataPagamento'],
-//                 $_POST['dataVencimento'],
-//                 $_POST['categoria'], // Agora o valor vem diretamente do formulário
-//                 $_POST['formaPagamento']
-//             );
-//         } else {
-//             echo "Erro: Todos os campos devem ser preenchidos!";
-//         }
-//     } elseif (isset($_POST['deletar'])) {
-//         // Lógica para deletar a conta
-//         if (isset($_POST['idConta']) && is_numeric($_POST['idConta'])) {
-//             $idConta = (int) $_POST['idConta'];  // Garantir que idConta seja numérico
-            
-//             // Chamar método de deletação
-//             $contaModel->deletar($idConta);
-//         } else {
-//             echo "Erro: ID da conta inválido!";
-//         }
-//     }
-// }
 
 
 $categoriaSelecionada = isset($_POST['categoria']) ? (int) $_POST['categoria'] : (isset($conta['categoria']) ? $conta['categoria'] : null);
 // Lista todas as contas
 $contas = $contaModel->listar();
-
-
-// Recupera as listas de categorias e formas de pagamento
-$categorias = $categoria->listar();
-$formasPagamento = $formaPagamentoModel->listar($_SESSION['idUsuario']);
-
-
 echo '<pre>';
 //var_dump($contas);  // Exibe o array de categorias com mais detalhes
 echo '</pre>';
