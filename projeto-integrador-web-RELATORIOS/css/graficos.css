@@ -1,0 +1,25 @@
+#graficoPizza {
+    max-width: 100%;  /* Faz o gráfico se ajustar à largura da tela */
+    height: auto;     /* Ajusta a altura automaticamente mantendo a proporção */
+    max-height: 400px; /* Define uma altura máxima para evitar que o gráfico fique muito grande */
+}
+
+@media (max-width: 600px) {
+    #graficoPizza {
+        width: 100%;
+        height: 250px;  /* Ajuste a altura para telas menores */
+    }
+}
+
+#graficoLinha {
+    max-width: 100%;  /* Faz o gráfico se ajustar à largura da tela */
+    height: auto;     /* Ajusta a altura automaticamente mantendo a proporção */
+    max-height: 400px; /* Define uma altura máxima para evitar que o gráfico fique muito grande */
+}
+
+@media (max-width: 600px) {
+    #graficoLinha {
+        width: 100%;
+        height: 250px;  /* Ajuste a altura para telas menores */
+    }
+}
