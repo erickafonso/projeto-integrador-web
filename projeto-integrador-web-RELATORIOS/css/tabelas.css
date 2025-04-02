@@ -1,0 +1,176 @@
+/* Estilos para a página de relatórios */
+body {
+    padding-top: 80px; /* Espaço para a barra de navegação */
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.form-container {
+    max-width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-bottom: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 20px auto;
+    width: 95%;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-group button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.form-group button:hover {
+    background-color: #45a049;
+}
+
+.table-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    max-height: calc(100vh - 300px);
+    position: relative;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+.info-paginacao {
+    text-align: center;
+    margin: 10px 0;
+    color: #666;
+    font-style: italic;
+}
+
+.paginacao {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.paginacao a, .paginacao span {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.paginacao a:hover {
+    background-color: #f2f2f2;
+}
+
+.paginacao .ativa {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .form-container {
+        padding: 10px;
+        margin: 10px auto;
+        width: calc(100% - 20px);
+    }
+    
+    .form-group {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    select, input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .table-wrapper {
+        max-height: calc(100vh - 250px);
+    }
+    
+    .table-container {
+        margin: 10px;
+        padding: 10px;
+    }
+    
+    .paginacao {
+        gap: 3px;
+    }
+    
+    .paginacao a, .paginacao span {
+        padding: 6px 8px;
+        font-size: 14px;
+    }
+}

@@ -1,0 +1,238 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['idUsuario']) || empty($_SESSION['idUsuario'])) {
+    header('Location: usuario/index.php');
+    exit;
+}
+
+$usuarioId = $_SESSION['idUsuario'];
+
+include_once('usuario/conexao.php');
+include('modelo/Categoria.php');
+
+if (!isset($pdo)) {
+    die("Erro: A conexão com o banco de dados não foi estabelecida.");
+}
+
+$categoriaModel = new Categoria($pdo);
+
+function obterDatasMinMax($pdo, $usuarioId) {
+    $sql = "SELECT MIN(dataPagamento) as min_date, MAX(dataPagamento) as max_date 
+            FROM (
+                SELECT dataPagamento FROM conta WHERE idUsuario = :usuarioId
+                UNION ALL
+                SELECT dataPagamento FROM despesa WHERE idUsuario = :usuarioId
+            ) as datas";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+$datasLimite = obterDatasMinMax($pdo, $usuarioId);
+
+$dataInicio = isset($_POST['data_inicio']) ? $_POST['data_inicio'] : $datasLimite['min_date'];
+$dataFim = isset($_POST['data_fim']) ? $_POST['data_fim'] : $datasLimite['max_date'];
+$ordenarPor = isset($_POST['ordenar_por']) ? $_POST['ordenar_por'] : 'categoria';
+$ordem = isset($_POST['ordem']) ? $_POST['ordem'] : 'asc';
+
+function gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor, $ordem) {
+    $sql = "SELECT 
+                c.idCategoria,
+                c.nome as categoria,
+                COUNT(*) as quantidade,
+                SUM(CASE WHEN con.idConta IS NOT NULL THEN con.valor ELSE 0 END) + 
+                SUM(CASE WHEN d.idDespesa IS NOT NULL THEN d.valor ELSE 0 END) as total,
+                MAX(GREATEST(IFNULL(con.dataPagamento, '0000-00-00'), IFNULL(d.dataPagamento, '0000-00-00'))) as ultima_data
+            FROM categoria c
+            LEFT JOIN conta con ON con.categoria = c.idCategoria AND con.idUsuario = :usuarioId 
+                AND con.dataPagamento BETWEEN :inicio AND :fim
+            LEFT JOIN despesa d ON d.categoria = c.idCategoria AND d.idUsuario = :usuarioId 
+                AND d.dataPagamento BETWEEN :inicio AND :fim
+            WHERE c.idUsuario = :usuarioId
+            GROUP BY c.idCategoria, c.nome";
+
+    $ordenacaoValida = [
+        'categoria' => 'c.nome',
+        'valor' => 'total',
+        'quantidade' => 'quantidade',
+        'data' => 'ultima_data'
+    ];
+    
+    if (array_key_exists($ordenarPor, $ordenacaoValida)) {
+        $sql .= " ORDER BY " . $ordenacaoValida[$ordenarPor] . " " . ($ordem === 'desc' ? 'DESC' : 'ASC');
+    }
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+    $stmt->bindParam(':inicio', $dataInicio);
+    $stmt->bindParam(':fim', $dataFim);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor, $ordem);
+?>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Gastos por Categoria</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .filtros {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filtro-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        select, input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        .info-periodo {
+            margin-bottom: 15px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Gastos por Categoria</h1>
+        
+        <form method="POST" class="filtros">
+            <div class="filtro-group">
+                <label for="data_inicio">Data Início:</label>
+                <input type="date" id="data_inicio" name="data_inicio" value="<?= $dataInicio ?>" 
+                       min="<?= $datasLimite['min_date'] ?>" max="<?= $datasLimite['max_date'] ?>">
+            </div>
+            
+            <div class="filtro-group">
+                <label for="data_fim">Data Fim:</label>
+                <input type="date" id="data_fim" name="data_fim" value="<?= $dataFim ?>" 
+                       min="<?= $datasLimite['min_date'] ?>" max="<?= $datasLimite['max_date'] ?>">
+            </div>
+            
+            <div class="filtro-group">
+                <label for="ordenar_por">Ordenar por:</label>
+                <select id="ordenar_por" name="ordenar_por">
+                    <option value="categoria" <?= $ordenarPor == 'categoria' ? 'selected' : '' ?>>Categoria</option>
+                    <option value="valor" <?= $ordenarPor == 'valor' ? 'selected' : '' ?>>Valor Gasto</option>
+                    <option value="quantidade" <?= $ordenarPor == 'quantidade' ? 'selected' : '' ?>>Quantidade</option>
+                    <option value="data" <?= $ordenarPor == 'data' ? 'selected' : '' ?>>Data</option>
+                </select>
+                
+                <select name="ordem">
+                    <option value="asc" <?= $ordem == 'asc' ? 'selected' : '' ?>>Crescente</option>
+                    <option value="desc" <?= $ordem == 'desc' ? 'selected' : '' ?>>Decrescente</option>
+                </select>
+            </div>
+            
+            <button type="submit">Gerar Relatório</button>
+        </form>
+        
+        <div class="info-periodo">
+            Período: <?= date('d/m/Y', strtotime($dataInicio)) ?> a <?= date('d/m/Y', strtotime($dataFim)) ?>
+        </div>
+        
+        <?php if (count($relatorio) > 0): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Valor Gasto (R$)</th>
+                        <th>Quantidade de Registros</th>
+                        <th>Última Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $totalGeral = 0;
+                    $quantidadeGeral = 0;
+                    
+                    foreach ($relatorio as $linha): 
+                        $totalGeral += $linha['total'];
+                        $quantidadeGeral += $linha['quantidade'];
+                    ?>
+                        <tr>
+                            <td><?= htmlspecialchars($linha['categoria']) ?></td>
+                            <td>R$ <?= number_format($linha['total'], 2, ',', '.') ?></td>
+                            <td><?= $linha['quantidade'] ?></td>
+                            <td><?= $linha['ultima_data'] != '0000-00-00' ? date('d/m/Y', strtotime($linha['ultima_data'])) : '-' ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    
+                    <tr class="total-row">
+                        <td><strong>TOTAL GERAL</strong></td>
+                        <td><strong>R$ <?= number_format($totalGeral, 2, ',', '.') ?></strong></td>
+                        <td><strong><?= $quantidadeGeral ?></strong></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>Nenhum registro encontrado para o período selecionado.</p>
+        <?php endif; ?>
+    </div>
+</body>
+</html>
