@@ -23,7 +23,7 @@ USE contador;
 CREATE TABLE `usuarios` (
   `idUsuario` INT(11) NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(18) NOT NULL,
-  `login` VARCHAR(18) NOT NULL,
+  
   `email` VARCHAR(30) NOT NULL,
   `senha` VARCHAR(255) NOT NULL,
   `ativo` ENUM('Sim','Não') DEFAULT 'Sim',
@@ -67,9 +67,9 @@ CREATE TABLE `formapagamento` (
 
 CREATE TABLE `conta` (
   `idConta` INT(11) NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(18) NOT NULL,
+  `nome` VARCHAR(30) NOT NULL,
   `valor` DOUBLE NOT NULL,
-  `descricao` VARCHAR(18) DEFAULT NULL,
+  `descricao` VARCHAR(200) DEFAULT NULL,
   `dataPagamento` DATE DEFAULT NULL,
   `dataVencimento` DATE NOT NULL,
   `categoria` INT(11) DEFAULT NULL,
@@ -90,9 +90,9 @@ CREATE TABLE `conta` (
 
 CREATE TABLE `despesa` (
   `idDespesa` INT(11) NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(18) NOT NULL,
+  `nome` VARCHAR(30) NOT NULL,
   `valor` DOUBLE NOT NULL,
-  `descricao` VARCHAR(18) DEFAULT NULL,
+  `descricao` VARCHAR(200) DEFAULT NULL,
   `dataPagamento` DATE NOT NULL,
   `categoria` INT(11) DEFAULT NULL,
   `formaPagamento` INT(11) DEFAULT NULL,
@@ -108,9 +108,9 @@ CREATE TABLE `despesa` (
 -- Inserindo dados de exemplo na tabela `usuarios`
 -- --------------------------------------------------------
 
-INSERT INTO `usuarios` (`nome`, `login`, `email`, `senha`, `ativo`, `nivel`) VALUES
-('Erick', 'erickafonso', 'erick@hotmail.com', '$2y$10$NKTVF8Tjfc..GGhejyCli.tUfw8z2DZAo5x4NZfx.HzLAgB6ZR0mG', 'Sim', 'usuario'),
-('teste', 'teste', 'teste@gmail.com', '$2y$10$NKTVF8Tjfc..GGhejyCli.tUfw8z2DZAo5x4NZfx.HzLAgB6ZR0mG', 'Sim', 'usuario');
+INSERT INTO `usuarios` (`nome`,  `email`, `senha`, `ativo`, `nivel`) VALUES
+('Erick',  'erick@hotmail.com', '$2y$10$NKTVF8Tjfc..GGhejyCli.tUfw8z2DZAo5x4NZfx.HzLAgB6ZR0mG', 'Sim', 'usuario'),
+('teste',  'teste@gmail.com', '$2y$10$NKTVF8Tjfc..GGhejyCli.tUfw8z2DZAo5x4NZfx.HzLAgB6ZR0mG', 'Sim', 'usuario');
 
 -- --------------------------------------------------------
 -- Inserindo dados de exemplo na tabela `formapagamento`

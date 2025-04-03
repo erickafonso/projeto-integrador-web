@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
 
+require_once 'utilidades.php';
 include_once('usuario/conexao.php');
 
 
@@ -16,9 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $senha = $_POST['senha'] ?? '';
     $confirmar_senha = $_POST['confirmar_senha'] ?? '';
 
-    // Validações básicas
     if (empty($nome) || empty($email) || empty($senha)) {
         $erro = "Todos os campos são obrigatórios!";
+    } elseif (!Utilidades::validarNome($nome)) {
+        $erro = "O nome não pode conter números ou caracteres especiais!";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erro = "Email inválido!";
+    } elseif (!Utilidades::validarSenha($senha)) {
+        $erro = "A senha deve ter no mínimo 6 caracteres!";
     } elseif ($senha !== $confirmar_senha) {
         $erro = "As senhas não coincidem!";
     } else {
@@ -99,5 +105,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <button type="submit">Cadastrar</button>
     </form>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Impede números no campo nome
+    document.getElementById('nome').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[0-9]/g, '');
+    });
+
+    // Valida senha em tempo real
+    document.getElementById('senha').addEventListener('input', function(e) {
+        const feedback = document.getElementById('senha-feedback');
+        if (this.value.length < 6 && this.value.length > 0) {
+            feedback.textContent = 'A senha deve ter no mínimo 6 caracteres';
+            feedback.style.color = 'red';
+        } else {
+            feedback.textContent = '';
+        }
+    });
+
+    // Para campos numéricos (exemplo, se tiver algum no seu formulário)
+    document.querySelectorAll('.campo-numerico').forEach(input => {
+        input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    // Para campos de data (exemplo)
+    document.querySelectorAll('.campo-data').forEach(input => {
+        input.addEventListener('input', function(e) {
+            // Permite apenas números e barras
+            this.value = this.value.replace(/[^0-9\/]/g, '');
+            
+            // Auto-formatação para data (DD/MM/AAAA)
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 2 && value.length <= 4) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            } else if (value.length > 4) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4) + '/' + value.substring(4, 8);
+            }
+            this.value = value.substring(0, 10);
+        });
+    });
+});
+</script>
 </body>
 </html>
