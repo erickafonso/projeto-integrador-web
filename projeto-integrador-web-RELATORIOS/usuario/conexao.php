@@ -19,7 +19,7 @@
 
     try{
         $pdo = new PDO("mysql:dbname=$banco;host=$servidor; charset=utf8", "$usuario", "$senha");
-        echo "Conexão estabelecida com sucesso!"; // Mensagem de sucesso
+        //echo "Conexão estabelecida com sucesso!"; // Mensagem de sucesso
     }catch (Exception $e){
         echo 'Erro ao conectar ao banco de dados! <br>';
         echo $e;

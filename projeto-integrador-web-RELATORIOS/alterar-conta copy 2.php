@@ -4,7 +4,7 @@ session_start();
 // Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
     // Caso não esteja logado, redireciona para a página de login
-    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    header('Location: usuario/login.php');  // Troque "login.php" pelo arquivo correto de login
     exit;
 }
 include('usuario/conexao.php');  // Inclui o arquivo de conexão com o banco de dados
@@ -111,7 +111,7 @@ function getIdFormaPagamento($conn, $nome) {
 <header>
     <nav id="navMenu">
         <ul>
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.php">Home</a></li>
             <li><a>|</a></li>
             <li><a href="contas.html">Contas</a></li>
             <li><a>|</a></li>

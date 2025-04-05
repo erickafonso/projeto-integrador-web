@@ -4,7 +4,7 @@ session_start();
 // Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
     // Caso não esteja logado, redireciona para a página de login
-    header('Location: usuario/index.php');
+    header('Location: usuario/login.php');
     exit;
 }
 
@@ -210,7 +210,7 @@ $valores = $gastosTotais['valores'];
     <header>
         <nav id="navMenu">
             <ul>
-                <li><a href="index.html">Home</a></li>
+                <li><a href="index.php">Home</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.html">Contas</a></li>
                 <li><a>|</a></li>

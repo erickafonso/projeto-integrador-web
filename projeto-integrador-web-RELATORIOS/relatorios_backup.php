@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
-    header('Location: usuario/index.php');
+    header('Location: usuario/login.php');
     exit;
 }
 

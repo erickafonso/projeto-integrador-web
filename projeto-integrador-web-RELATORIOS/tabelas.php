@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['idUsuario']) || empty($_SESSION['idUsuario'])) {
-    header('Location: usuario/index.php');
+    header('Location: usuario/login.php');
     exit;
 }
 

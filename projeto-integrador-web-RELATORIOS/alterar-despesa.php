@@ -3,38 +3,44 @@ session_start();
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
-    // Caso não esteja logado, redireciona para a página de login
-    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    header('Location: usuario/login.php');
     exit;
 }
-include('usuario/conexao.php');  // Inclui o arquivo de conexão com o banco de dados
-include('modelo/Despesa.php');   // Inclui o modelo da tabela Despesa
-include('modelo/Categoria.php'); // Inclui o modelo da tabela Categoria
-include('modelo/FormaPagamento.php'); // Inclui o modelo da tabela FormaPagamento
+
+include('usuario/conexao.php');
+include('modelo/Despesa.php');
+include('modelo/Categoria.php');
+include('modelo/FormaPagamento.php');
 
 if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
-$despesaModel = new Despesa($pdo);  // Cria uma instância do modelo Despesa
-$categoriaModel = new Categoria($pdo);  // Cria uma instância do modelo Categoria
-$formaPagamentoModel = new FormaPagamento($pdo); // Cria uma instância do modelo FormaPagamento
+$despesaModel = new Despesa($pdo);
+$categoriaModel = new Categoria($pdo);
+$formaPagamentoModel = new FormaPagamento($pdo);
 
-// Recupera as listas de categorias e formas de pagamento
 $categorias = $categoriaModel->listar();
 $formasPagamento = $formaPagamentoModel->listar($_SESSION['idUsuario']);
 
+// Variável para mensagens de sucesso
+$mensagemSucesso = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
-        // Chama a função de alterar despesa
         $despesaModel->alterar($_POST['idDespesa'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], $_POST['dataPagamento'], $_POST['categoria'], $_POST['formaPagamento']);
+        $mensagemSucesso = 'alterar';
     } elseif (isset($_POST['deletar'])) {
-        // Chama a função de deletar despesa
         $despesaModel->deletar($_POST['idDespesa']);
+        $mensagemSucesso = 'deletar';
     }
+    
+    // Recarrega a página para evitar reenvio do formulário
+    header("Location: alterar-despesa.php?sucesso=" . $mensagemSucesso);
+    exit;
 }
 
-$despesas = $despesaModel->listar();  // Lista todas as despesas
+$despesas = $despesaModel->listar();
 ?>
 
 <!DOCTYPE html>
@@ -44,23 +50,67 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/alteracoes.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/styles.css">
     <title>Manutenção de Despesas</title>
+    <script type="text/javascript">
+        function confirmarAcao(acao) {
+            if (acao === 'deletar') {
+                return confirm("Você tem certeza que deseja deletar esta despesa?");
+            } else {
+                return confirm("Você tem certeza que deseja alterar esta despesa?");
+            }
+        }
+        
+        function submeterFormulario(btn, acao) {
+            if (confirmarAcao(acao)) {
+                var form = btn.closest('form');
+                
+                // Cria um input hidden para a ação específica
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = acao;
+                input.value = '1';
+                form.appendChild(input);
+                
+                form.submit();
+            }
+            return false;
+        }
+        
+        // Mostra mensagem de sucesso quando a página carrega
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sucesso = urlParams.get('sucesso');
+            
+            if (sucesso === 'alterar') {
+                alert('Despesa alterada com sucesso!');
+            } else if (sucesso === 'deletar') {
+                alert('Despesa deletada com sucesso!');
+            }
+        };
+    </script>
 </head>
 <body>
-<header>
+<header class="despesas">
     <nav id="navMenu">
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a>|</a></li>
-            <li><a href="contas.html">Contas</a></li>
-            <li><a>|</a></li>
-            <li><a href="despesas.html">Despesas</a></li>
-            <li><a>|</a></li>
-            <li><a href="formaPagamento.html">Formas de pagamento</a></li>
-            <li><a>|</a></li>
-            <li><a href="categorias.html">Categorias</a></li>
-            <li><a>|</a></li>
-        </ul>
+    <ul>
+                <li><a href="index.php">Home</a></li>
+                <li><a>|</a></li>
+                <li><a href="contas.php">Contas</a></li>
+                <li><a>|</a></li>
+                <li><a href="despesas.php">Despesas</a></li>
+                <li><a>|</a></li>
+                <li><a href="formaPagamento.php">Formas de pagamento</a></li>
+                <li><a>|</a></li>
+                <li><a href="categorias.php">Categorias</a></li>
+                <li><a>|</a></li>
+                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a>|</a></li>
+                <li><a href="graficos.php">Gráficos</a></li>
+                <li><a>|</a></li>
+                <!-- Botão Sair com class 'logout' -->
+                <li><a href="logout.php" class="logout">Sair</a></li>
+            </ul>
     </nav>
 </header>
 
@@ -68,14 +118,14 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
     <h1>Manutenção de Despesas</h1>
     <table border="1">
         <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Valor</th>
-            <th>Descrição</th>
-            <th>Data de Pagamento</th>
-            <th>Categoria</th>
-            <th>Forma de Pagamento</th>
-            <th>Ações</th>
+            <th class="despesas">Código</th>
+            <th class="despesas">Nome</th>
+            <th class="despesas">Valor</th>
+            <th class="despesas">Descrição</th>
+            <th class="despesas">Data de Pagamento</th>
+            <th class="despesas">Categoria</th>
+            <th class="despesas">Forma de Pagamento</th>
+            <th class="despesas">Ações</th>
         </tr>
         <?php foreach ($despesas as $despesa): ?>
         <tr>
@@ -86,7 +136,6 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
             <td><?php echo date('d/m/Y', strtotime($despesa['dataPagamento'])); ?></td>
             <td>
                 <?php
-                    // Substituir o valor numérico pela categoria correspondente
                     $categoriaNome = '';
                     foreach ($categorias as $categoria) {
                         if ($categoria['idCategoria'] == $despesa['categoria']) {
@@ -99,7 +148,6 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
             </td>
             <td>
                 <?php
-                    // Substituir o valor numérico pela forma de pagamento correspondente
                     $formaPagamentoNome = '';
                     foreach ($formasPagamento as $forma) {
                         if ($forma['idFormaPagamento'] == $despesa['formaPagamento']) {
@@ -111,45 +159,39 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
                 ?>
             </td>
             <td>
-                <!-- Formulário para Alterar ou Deletar -->
-                <form method="POST" style="display:inline;">
-                <div class="input-group">
-                    <div class="input-container">
-                        <input type="hidden" name="idDespesa" value="<?php echo $despesa['idDespesa']; ?>">
-
-                        <!-- Inputs para alteração -->
-                        <input type="text" name="nome" value="<?php echo $despesa['nome']; ?>" required>
-                        <input type="number" step="0.01" name="valor" value="<?php echo $despesa['valor']; ?>" required>
-                        <input type="text" name="descricao" value="<?php echo $despesa['descricao']; ?>">
+                <form method="POST" action="alterar-despesa.php">
+                    <div class="input-group">
+                        <div class="input-container">
+                            <input type="hidden" name="idDespesa" value="<?php echo $despesa['idDespesa']; ?>">
+                            <input type="text" name="nome" value="<?php echo $despesa['nome']; ?>" required>
+                            <input type="number" step="0.01" name="valor" value="<?php echo $despesa['valor']; ?>" required>
+                            <input type="text" name="descricao" value="<?php echo $despesa['descricao']; ?>">
                         </div>
                         <div class="input-container">
-                        <input type="date" name="dataPagamento" value="<?php echo $despesa['dataPagamento']; ?>" required>
+                            <input type="date" name="dataPagamento" value="<?php echo $despesa['dataPagamento']; ?>" required>
                         </div>
-                        <!-- Combo Box Categoria -->
                         <div class="input-container">
-                        <select name="categoria" required>
-                            <?php foreach ($categorias as $categoria): ?>
-                                <option value="<?php echo $categoria['idCategoria']; ?>" <?php echo ($categoria['idCategoria'] == $despesa['categoria']) ? 'selected' : ''; ?>>
-                                    <?php echo $categoria['nome']; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <!-- Combo Box Forma de Pagamento -->
-                        <select name="formaPagamento" required>
-                            <?php foreach ($formasPagamento as $forma): ?>
-                                <option value="<?php echo $forma['idFormaPagamento']; ?>" <?php echo ($forma['idFormaPagamento'] == $despesa['formaPagamento']) ? 'selected' : ''; ?>>
-                                    <?php echo $forma['nome']; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                            <select name="categoria" required>
+                                <?php foreach ($categorias as $categoria): ?>
+                                    <option value="<?php echo $categoria['idCategoria']; ?>" <?php echo ($categoria['idCategoria'] == $despesa['categoria']) ? 'selected' : ''; ?>>
+                                        <?php echo $categoria['nome']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            
+                            <select name="formaPagamento" required>
+                                <?php foreach ($formasPagamento as $forma): ?>
+                                    <option value="<?php echo $forma['idFormaPagamento']; ?>" <?php echo ($forma['idFormaPagamento'] == $despesa['formaPagamento']) ? 'selected' : ''; ?>>
+                                        <?php echo $forma['nome']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- Botões -->
-                    <div class="button-container">
-                        <button type="submit" name="alterar" class="btn-alterar">Alterar</button>
-                        <button type="submit" name="deletar" class="btn-deletar">Deletar</button>
-                    </div>
+                        <div class="button-container">
+                            <button type="button" class="btn-alterar" onclick="submeterFormulario(this, 'alterar')">Alterar</button>
+                            <button type="button" class="btn-deletar" onclick="submeterFormulario(this, 'deletar')">Deletar</button>
+                        </div>
                     </div>
                 </form>
             </td>
@@ -157,6 +199,5 @@ $despesas = $despesaModel->listar();  // Lista todas as despesas
         <?php endforeach; ?>
     </table>
 </div>
-
 </body>
 </html>

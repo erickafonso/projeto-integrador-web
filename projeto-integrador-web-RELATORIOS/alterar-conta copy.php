@@ -95,7 +95,7 @@ $categorias = preencherComboBoxCategoria($conn);
 <header>
     <nav id="navMenu">
         <ul>
-            <li><a href="index.html">Home</a></li>
+            <li><a href="index.php">Home</a></li>
             <li><a>|</a></li>
             <li><a href="contas.html">Contas</a></li>
             <li><a>|</a></li>

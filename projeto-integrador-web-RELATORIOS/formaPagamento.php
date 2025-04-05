@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
+    header('Location: usuario/login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -8,29 +18,35 @@
     <title>Contador de gastos</title>
 </head>
 <body>
-    <header class="categorias">
+    <header class="formas-pagamento">
         <nav id="navMenu">
-            <ul>
+        <ul>
                 <li><a href="index.php">Home</a></li>
                 <li><a>|</a></li>
-                <li><a href="contas.html">Contas</a></li>
+                <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
-                <li><a href="despesas.html">Despesas</a></li>
+                <li><a href="despesas.php">Despesas</a></li>
                 <li><a>|</a></li>
-                <li><a href="formaPagamento.html">Formas de pagamento</a></li>
+                <li><a href="formaPagamento.php">Formas de pagamento</a></li>
                 <li><a>|</a></li>
-                <li><a href="categorias.html">Categorias</a></li>
+                <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
+                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a>|</a></li>
+                <li><a href="graficos.php">Gráficos</a></li>
+                <li><a>|</a></li>
+                <!-- Botão Sair com class 'logout' -->
+                <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
         </nav>
     </header>
 
     <div class="button-container">
-        <a href="cadastro-categorias.php">
-            <button class="categorias">Cadastro</button>
+        <a href="cadastro-forma-pagamento.php">
+            <button class="formas-pagamento">Cadastro</button>
         </a>
-        <a href="alterar-categoria.php">
-            <button class="categorias">Alterar Categorias</button>
+        <a href="alterar-formaPagamento.php">
+            <button class="formas-pagamento">Alterar Formas de Pagamento</button>
         </a>
         
         </div>

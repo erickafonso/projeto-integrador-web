@@ -50,7 +50,7 @@ if($linhas == 0){
             </form>
             <br>
 
-            <p class="recuperar"><a title="Clique para recuperar a senha" href="" data-bs-toggle="modal" data-bs-target="#exempleModal">Recuperar Senha</a></p>
+            <p class="recuperar"><a title="Clique para criar usuario" href="" data-bs-toggle="modal" data-bs-target="#exempleModal">Não tenho conta</a></p>
         </div>
         <!-- fecha a div da class form -->
     </div> 
@@ -66,7 +66,7 @@ if($linhas == 0){
                 <div class="modal-body">
                     <form method="post" id="form-recuperar">
                         <input placeholder="Digite seu email" class="form-control" type="email" name="email" id="email-recuperar" required>
-                        <button type="submit">Recuperar</button>
+                        <button type="submit">Não tenho conta</button>
                     </form>
                 </div>
                 <!-- Fecha a div da class modal-body -->

@@ -3,119 +3,43 @@ session_start();
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
-    // Caso não esteja logado, redireciona para a página de login
-    header('Location: usuario/index.php');  // Troque "login.php" pelo arquivo correto de login
+    header('Location: usuario/login.php');
     exit;
 }
-include('usuario/conexao.php');  // Inclui o arquivo de conexão com o banco de dados
-include('modelo/Conta.php'); // Inclui o modelo Conta
-include('modelo/Categoria.php'); // Inclui o modelo Conta
-include('modelo/FormaPagamento.php'); // Inclui o modelo Conta
+
+include('usuario/conexao.php');
+include('modelo/Conta.php');
+include('modelo/Categoria.php');
+include('modelo/FormaPagamento.php');
 
 if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
-// Supondo que você tenha a conexão PDO já estabelecida, como $pdo
 $categoria = new Categoria($pdo);
 $formaPagamentoModel = new FormaPagamento($pdo);
-// Chama a função para obter os nomes das categorias com os IDs como índice
 $nomesCategorias = $categoria->getNomesComIds();
 $formas = $formaPagamentoModel->getFormasComIds($_SESSION['idUsuario']);
-// Exibe os nomes das categorias com os IDs como índice
-
 $contaModel = new Conta($pdo);
+
+// Variável para mensagens de sucesso
+$mensagemSucesso = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['alterar'])) {
-        // Chama a função de alterar conta
-        $despesaModel->alterar($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento']);
+        $contaModel->alterar($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento']);
+        $mensagemSucesso = 'alterar';
     } elseif (isset($_POST['deletar'])) {
-        // Chama a função de deletar conta
-        $despesaModel->deletar($_POST['idConta']);
+        $contaModel->deletar($_POST['idConta']);
+        $mensagemSucesso = 'deletar';
     }
+    
+    // Recarrega a página para evitar reenvio do formulário
+    header("Location: alterar-conta.php?sucesso=" . $mensagemSucesso);
+    exit;
 }
 
-
-
-
-// // Processa a alteração ou exclusão
-// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//     if (isset($_POST['alterar'])) {
-//         // Lógica de alteração da conta
-//         if (isset($_POST['idConta'], $_POST['nome'], $_POST['valor'], $_POST['descricao'], 
-//                   $_POST['dataPagamento'], $_POST['dataVencimento'], $_POST['categoria'], $_POST['formaPagamento'])) {
-
-//             // Validar categoria, etc.
-//             // ...
-
-//             // Chamar método de alteração
-//             $contaModel->alterar(
-//                 $_POST['idConta'],
-//                 $_POST['nome'],
-//                 $_POST['valor'],
-//                 $_POST['descricao'],
-//                 $_POST['dataPagamento'],
-//                 $_POST['dataVencimento'],
-//                 $_POST['categoria'], // Agora o valor vem diretamente do formulário
-//                 $_POST['formaPagamento']
-//             );
-//         } else {
-//             echo "Erro: Todos os campos devem ser preenchidos!";
-//         }
-//     } elseif (isset($_POST['deletar'])) {
-//         // Lógica para deletar a conta
-//         if (isset($_POST['idConta']) && is_numeric($_POST['idConta'])) {
-//             $idConta = (int) $_POST['idConta'];  // Garantir que idConta seja numérico
-            
-//             // Chamar método de deletação
-//             $contaModel->deletar($idConta);
-//         } else {
-//             echo "Erro: ID da conta inválido!";
-//         }
-//     }
-// }
-
-
-$categoriaSelecionada = isset($_POST['categoria']) ? (int) $_POST['categoria'] : (isset($conta['categoria']) ? $conta['categoria'] : null);
-// Lista todas as contas
 $contas = $contaModel->listar();
-
-
-// Recupera as listas de categorias e formas de pagamento
-$categorias = $categoria->listar();
-$formasPagamento = $formaPagamentoModel->listar($_SESSION['idUsuario']);
-
-
-echo '<pre>';
-//var_dump($contas);  // Exibe o array de categorias com mais detalhes
-echo '</pre>';
-// Funções para buscar IDs de categoria e forma de pagamento
-function getIdCategoria($conn, $nome) {
-    $id_categoria = 1;
-    $sql = "SELECT idCategoria FROM categoria WHERE nome = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $nome);
-    $stmt->execute();
-    $stmt->bind_result($id_categoria);
-    $stmt->fetch();
-    $stmt->close();
-    return $id_categoria ?? 1; // Retorna 1 se não encontrar
-}
-
-function getIdFormaPagamento($conn, $nome) {
-    $id_forma_pagamento = 1;
-    $sql = "SELECT idFormaPagamento FROM formaPagamento WHERE nome = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $nome);
-    $stmt->execute();
-    $stmt->bind_result($id_forma_pagamento);
-    $stmt->fetch();
-    $stmt->close();
-    return $id_forma_pagamento ?? 1; // Retorna 1 se não encontrar
-}
-
-
 ?>
 
 <!DOCTYPE html>
@@ -123,42 +47,85 @@ function getIdFormaPagamento($conn, $nome) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/alteracoes.css">
     <link rel="stylesheet" href="css/nav.css">
     <title>Manutenção de Contas</title>
+    <script type="text/javascript">
+        function confirmarAcao(acao) {
+            if (acao === 'deletar') {
+                return confirm("Você tem certeza que deseja deletar esta conta?");
+            } else {
+                return confirm("Você tem certeza que deseja alterar esta conta?");
+            }
+        }
+        
+        function submeterFormulario(btn, acao) {
+            if (confirmarAcao(acao)) {
+                var form = btn.closest('form');
+                
+                // Cria um input hidden para a ação específica
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = acao;
+                input.value = '1';
+                form.appendChild(input);
+                
+                form.submit();
+            }
+            return false;
+        }
+        
+        // Mostra mensagem de sucesso quando a página carrega
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sucesso = urlParams.get('sucesso');
+            
+            if (sucesso === 'alterar') {
+                alert('Conta alterada com sucesso!');
+            } else if (sucesso === 'deletar') {
+                alert('Conta deletada com sucesso!');
+            }
+        };
+    </script>
 </head>
 <body>
-<header>
+<header class="contas">
     <nav id="navMenu">
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a>|</a></li>
-            <li><a href="contas.html">Contas</a></li>
-            <li><a>|</a></li>
-            <li><a href="despesas.html">Despesas</a></li>
-            <li><a>|</a></li>
-            <li><a href="formaPagamento.html">Formas de pagamento</a></li>
-            <li><a>|</a></li>
-            <li><a href="categorias.html">Categorias</a></li>
-        </ul>
+    <ul>
+                <li><a href="index.php">Home</a></li>
+                <li><a>|</a></li>
+                <li><a href="contas.php">Contas</a></li>
+                <li><a>|</a></li>
+                <li><a href="despesas.php">Despesas</a></li>
+                <li><a>|</a></li>
+                <li><a href="formaPagamento.php">Formas de pagamento</a></li>
+                <li><a>|</a></li>
+                <li><a href="categorias.php">Categorias</a></li>
+                <li><a>|</a></li>
+                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a>|</a></li>
+                <li><a href="graficos.php">Gráficos</a></li>
+                <li><a>|</a></li>
+                <!-- Botão Sair com class 'logout' -->
+                <li><a href="logout.php" class="logout">Sair</a></li>
+            </ul>
     </nav>
 </header>
 
 <div id="conteudo">
     <h1>Manutenção de Contas</h1>
-    
-<form method="POST" action="alterar-conta.php">
     <table border="1">
         <tr>
-            <th>Código</th>
-            <th>Nome</th>
-            <th>Valor</th>
-            <th>Descrição</th>
-            <th>Data Pagamento</th>
-            <th>Data Vencimento</th>
-            <th>Categoria</th>
-            <th>Forma de Pagamento</th>
-            <th>Ações</th>
+            <th class="contas">Código</th>
+            <th class="contas">Nome</th>
+            <th class="contas">Valor</th>
+            <th class="contas">Descrição</th>
+            <th class="contas">Data Pagamento</th>
+            <th class="contas">Data Vencimento</th>
+            <th class="contas">Categoria</th>
+            <th class="contas">Forma de Pagamento</th>
+            <th class="contas">Ações</th>
         </tr>
         <?php foreach ($contas as $conta): ?>
         <tr>
@@ -166,82 +133,58 @@ function getIdFormaPagamento($conn, $nome) {
             <td><?php echo $conta['nome']; ?></td>
             <td><?php echo $conta['valor']; ?></td>
             <td><?php echo $conta['descricao']; ?></td>
-            <td><?php echo $conta['dataPagamento']; ?></td>
-            <td><?php echo $conta['dataVencimento']; ?></td>
+            <td><?php echo date('d/m/Y', strtotime($conta['dataPagamento'])); ?></td>
+            <td><?php echo date('d/m/Y', strtotime($conta['dataVencimento'])); ?></td>
             <td>
                 <?php
-                // Encontrar a categoria baseada no idCategoria
                 foreach ($nomesCategorias as $categoriaItem) {
                     if ($categoriaItem->idCategoria == $conta['categoria']) {
-                        echo $categoriaItem->nome; // Exibe o nome da categoria
+                        echo $categoriaItem->nome;
                         break;
                     }
                 }
                 ?>
             </td>
             <td>
-                
                 <?php
-                // Encontrar a categoria baseada no idCategoria
                 foreach ($formas as $formaPagamentoItem) {
                     if ($formaPagamentoItem->idFormaPagamento == $conta['formaPagamento']) {
-                        echo $formaPagamentoItem->nome; // Exibe o nome da categoria
+                        echo $formaPagamentoItem->nome;
                         break;
                     }
                 }
                 ?>
             </td>
             <td class="acoes">
-                <!-- Formulário de alteração (mantenha o formulário para editar) -->
                 <form method="POST" action="alterar-conta.php">
                     <div class="input-group">
-                        <!-- Conjunto de campos (nome, valor, descrição) -->
                         <div class="input-container">
                             <input type="text" name="nome" placeholder="Nome:" value="<?php echo $conta['nome']; ?>" required>
                             <input type="number" name="valor" placeholder="Valor:" value="<?php echo $conta['valor']; ?>" step="0.01" required>
                             <input type="text" name="descricao" placeholder="Descrição:" value="<?php echo $conta['descricao']; ?>">
                         </div>
-
-                        <!-- Conjunto de campos para as datas -->
                         <div class="input-container">
                             <input type="date" name="dataPagamento" value="<?php echo $conta['dataPagamento']; ?>" required>
                             <input type="date" name="dataVencimento" value="<?php echo $conta['dataVencimento']; ?>" required>
                         </div>
-
-                        <!-- Conjunto de campos para categoria e forma de pagamento -->
                         <div class="input-container">
-                            <select id="categoria" name="categoria" required>
+                            <select name="categoria" required>
                                 <option value="">Selecione uma categoria</option>
-                                <?php
-                                // Preencher as opções do select com categorias
-                                foreach ($nomesCategorias as $categoriaItem) {
-                                    // Marca a categoria selecionada
-                                    $selected = ($categoriaItem->idCategoria == $conta['categoria']) ? 'selected' : '';
-                                    echo '<option value="' . $categoriaItem->idCategoria . '" ' . $selected . '>' . $categoriaItem->nome . '</option>';
-                                }
-                                ?>
+                                <?php foreach ($nomesCategorias as $categoriaItem): ?>
+                                    <option value="<?php echo $categoriaItem->idCategoria; ?>" <?php echo ($categoriaItem->idCategoria == $conta['categoria']) ? 'selected' : ''; ?>><?php echo $categoriaItem->nome; ?></option>
+                                <?php endforeach; ?>
                             </select>
-                            <select id="formaPagamento" name="formaPagamento" required>
-                                <option value="">Selecione uma Forma de pagamento</option>
-                                <?php
-                                // Preencher as opções do select com categorias
-                                foreach ($formas as $formaPagamentoItem) {
-                                    // Marca a categoria selecionada
-                                    $selected = ($formaPagamentoItem->idFormaPagamento == $conta['formaPagamento']) ? 'selected' : '';
-                                    echo '<option value="' . $formaPagamentoItem->idFormaPagamento . '" ' . $selected . '>' . $formaPagamentoItem->nome . '</option>';
-                                }
-                                ?>
+                            <select name="formaPagamento" required>
+                                <option value="">Selecione uma forma de pagamento</option>
+                                <?php foreach ($formas as $formaPagamentoItem): ?>
+                                    <option value="<?php echo $formaPagamentoItem->idFormaPagamento; ?>" <?php echo ($formaPagamentoItem->idFormaPagamento == $conta['formaPagamento']) ? 'selected' : ''; ?>><?php echo $formaPagamentoItem->nome; ?></option>
+                                <?php endforeach; ?>
                             </select>
-                            
-                           
                         </div>
-
-                        <!-- Botão para Alterar -->
                         <div class="button-container">
                             <input type="hidden" name="idConta" value="<?php echo $conta['idConta']; ?>">
-                            <button type="submit" name="alterar" class="btn-alterar">Alterar</button>
-                            <!-- Botão para Deletar -->
-                            <button type="submit" name="deletar" class="btn-deletar">Deletar</button>
+                            <button type="button" class="btn-alterar" onclick="submeterFormulario(this, 'alterar')">Alterar</button>
+                            <button type="button" class="btn-deletar" onclick="submeterFormulario(this, 'deletar')">Deletar</button>
                         </div>
                     </div>
                 </form>
@@ -249,9 +192,6 @@ function getIdFormaPagamento($conn, $nome) {
         </tr>
         <?php endforeach; ?>
     </table>
-</form>
-
 </div>
-
 </body>
 </html>

@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
-    header('Location: usuario/index.php');
+    header('Location: usuario/login.php');
     exit;
 }
 
@@ -187,16 +187,23 @@ $valores = array_values($gastosSemanais);
 <body>
     <header>
         <nav id="navMenu">
-            <ul>
-                <li><a href="index.html">Home</a></li>
+        <ul>
+                <li><a href="index.php">Home</a></li>
                 <li><a>|</a></li>
-                <li><a href="contas.html">Contas</a></li>
+                <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
-                <li><a href="despesas.html">Despesas</a></li>
+                <li><a href="despesas.php">Despesas</a></li>
                 <li><a>|</a></li>
-                <li><a href="formaPagamento.html">Formas de pagamento</a></li>
+                <li><a href="formaPagamento.php">Formas de pagamento</a></li>
                 <li><a>|</a></li>
-                <li><a href="categorias.html">Categorias</a></li>
+                <li><a href="categorias.php">Categorias</a></li>
+                <li><a>|</a></li>
+                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a>|</a></li>
+                <li><a href="graficos.php">Gráficos</a></li>
+                <li><a>|</a></li>
+                <!-- Botão Sair com class 'logout' -->
+                <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
         </nav>
     </header>

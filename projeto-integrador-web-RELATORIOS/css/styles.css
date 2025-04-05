@@ -3,13 +3,17 @@ header {
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #007bff;
+    background-color: #303030;
     color: #fff;
     padding: 1rem;
     text-align: center;
 }
 
-
+header:hover{
+    
+    background-color: #202020;
+    
+}
 
 header .container {
     max-width: 1200px;
@@ -43,7 +47,7 @@ nav a {
 }
 
 nav a:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 .button-container a {
     display: inline-block;
@@ -51,6 +55,7 @@ nav a:hover {
     opacity: 0; /* Start invisible */
     transform: translateY(20px); /* Start slightly lower */
     transition: opacity 0.5s ease, transform 0.5s ease; /* Transition for opacity and position */
+    text-decoration: none;
 }
 
 .button-container a.show {
@@ -87,4 +92,76 @@ nav a:hover {
 .form-container.show {
     opacity: 1; /* Fade in */
     transform: translateY(0); /* Mover para a posição original */
+}
+/* Contas - Azul */
+.contas, .contas button {
+    background-color: #007bff;
+    color: white;
+}
+
+.contas:hover, .contas button:hover {
+    background-color: #0067d4;
+}
+
+/* Despesas - Vermelho */
+.despesas, .despesas button {
+    background-color: red;
+    color: white;
+}
+
+.despesas:hover, .despesas button:hover {
+    background-color: rgb(206, 0, 0);
+}
+
+/* Categorias - Roxo */
+.categorias, .categorias button {
+    background-color: rgb(165, 89, 175);
+    color: white;
+}
+
+.categorias:hover, .categorias button:hover {
+    background-color: rgb(123, 64, 148);
+}
+
+/* Formas de pagamento - Amarelo */
+.formas-pagamento, .formas-pagamento button {
+    background-color: rgb(52, 179, 90);
+    color: white;
+}
+
+.formas-pagamento:hover, .formas-pagamento button:hover {
+    background-color: rgb(48, 143, 87);
+}
+
+.contas header, .contas th {
+    background-color: #007bff;
+    
+}
+.despesas header, .despesas th {
+    background-color: red;
+    
+}
+.categorias header , .categorias th{
+    background-color: rgb(165, 89, 175);
+    
+}
+.formas-pagamento header, .formas-pagamentoth {
+    background-color: rgb(52, 179, 90);
+    
+}
+#navMenu .logout {
+    position: absolute; /* Posiciona o botão de forma absoluta em relação ao header */
+    right: 10px; /* 10px de distância do canto direito */
+    top: 50%; /* Alinha o botão verticalmente no meio do header */
+    transform: translateY(-50%); /* Ajuste para centralizar verticalmente */
+    background-color: #f00; /* Cor de fundo para o botão */
+    color: white; /* Cor do texto */
+    padding: 10px 20px; /* Padding para o botão */
+    border-radius: 5px; /* Bordas arredondadas */
+    text-decoration: none; /* Remove o sublinhado do link */
+    display: inline-block;
+}
+
+#navMenu .logout:hover {
+    background-color: #c00; /* Altera a cor do fundo ao passar o mouse */
 }

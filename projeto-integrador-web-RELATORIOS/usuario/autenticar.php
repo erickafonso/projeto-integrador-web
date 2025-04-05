@@ -19,14 +19,14 @@ if ($res) {
     if (!password_verify($senha, $res['senha'])) {
         // Senha incorreta
         echo '<script>window.alert("Dados Incorretos!!")</script>';
-        echo '<script>window.location="index.php"</script>';
+        echo '<script>window.location="login.php"</script>';
         exit;
     }
 
     // Verifica se o acesso está ativo
     if ($res['ativo'] != 'Sim') {
         echo '<script>window.alert("Seu acesso foi desativado!!")</script>';
-        echo '<script>window.location="index.php"</script>';
+        echo '<script>window.location="login.php"</script>';
         exit;
     }
 
@@ -36,12 +36,12 @@ if ($res) {
     $_SESSION['nivel'] = $res['nivel'];
 
     // Redireciona para a página principal após o login
-    header('Location: ../index.html'); 
+    header('Location: ../index.php'); 
     exit;
 } else {
     // Caso o usuário não exista
     echo '<script>window.alert("Dados Incorretos!!")</script>';
-    echo '<script>window.location="index.php"</script>';
+    echo '<script>window.location="login.php"</script>';
     exit;
 }
 ?>

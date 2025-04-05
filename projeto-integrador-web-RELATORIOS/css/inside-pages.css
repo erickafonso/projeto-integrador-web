@@ -18,7 +18,7 @@ button {
     align-items: center;
     width: 250px; /* Largura do botão */
     height: 250px; /* Altura do botão */
-    background-color: #007bff;
+    /*background-color: #007bff;*/
     color: white;
     font-size: 18px;
     font-weight: bold;
@@ -29,6 +29,7 @@ button {
     text-decoration: none;
     transition: background-color 0.3s;
 }
-button:hover {
+/*button:hover {
     background-color: #0056b3;
 }
+*/
