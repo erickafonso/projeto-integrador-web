@@ -1,10 +1,10 @@
-/* Resetando margens e paddings */
+/* Resetando margens e paddings 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
+*/
 /* Definindo a fonte padrão e o espaçamento */
 body {
     font-family: Arial, sans-serif;

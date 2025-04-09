@@ -226,6 +226,7 @@ $semanaAtual = getSemanaAtual();
 $gastosSemanais = buscarGastosSemanais($pdo, $_SESSION['idUsuario'], $semanaAtual['inicio'], $semanaAtual['fim'], $tipoGasto);
 $diasSemana = array_keys($gastosSemanais);
 $valoresSemanais = array_values($gastosSemanais);
+$totalSemanal = array_sum($valoresSemanais);
 ?>
 
 <!DOCTYPE html>
@@ -234,8 +235,9 @@ $valoresSemanais = array_values($gastosSemanais);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Financeiro</title>
+    
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/nav.css">
+  
     <link rel="stylesheet" href="css/dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -369,7 +371,7 @@ $valoresSemanais = array_values($gastosSemanais);
     </header>
 
     <div class="dashboard-container">
-        <h1>Bem vindo(a),  <?php echo $_SESSION['nome']?></h1>
+        <h1>Bem vindo(a), <?= isset($_SESSION['nome']) ? $_SESSION['nome'] : 'Usuário' ?></h1>
         
         <div class="carrossel">
             <div class="slides">
@@ -417,6 +419,9 @@ $valoresSemanais = array_values($gastosSemanais);
                             <canvas id="graficoSemanal"></canvas>
                         </div>
                         
+                        <div class="info-total">
+                            Total semanal: R$ <?= number_format($totalSemanal, 2, ',', '.') ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -481,6 +486,7 @@ $valoresSemanais = array_values($gastosSemanais);
         
         const diasSemana = <?= json_encode($diasSemana) ?>;
         const valoresSemanais = <?= json_encode($valoresSemanais) ?>;
+        const totalSemanal = <?= $totalSemanal ?>;
         
         // Cores para os gráficos
         const corContas = 'rgba(54, 162, 235, 0.7)';
@@ -636,7 +642,12 @@ $valoresSemanais = array_values($gastosSemanais);
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Total: R$ ' + context.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                                const value = context.raw;
+                                const percent = ((value / totalSemanal) * 100).toFixed(2);
+                                return [
+                                    `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
+                                    `Percentual: ${percent}%`
+                                ];
                             }
                         }
                     }

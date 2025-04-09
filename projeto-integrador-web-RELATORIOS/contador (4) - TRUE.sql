@@ -113,7 +113,7 @@ INSERT INTO `usuarios` (`nome`,  `email`, `senha`, `ativo`, `nivel`) VALUES
 ('teste',  'teste@gmail.com', '$2y$10$NKTVF8Tjfc..GGhejyCli.tUfw8z2DZAo5x4NZfx.HzLAgB6ZR0mG', 'Sim', 'usuario');
 
 -- --------------------------------------------------------
--- Inserindo dados de exemplo na tabela `formapagamento`
+-- Inserindo dados de exemplo 
 -- --------------------------------------------------------
 
 INSERT INTO `categoria` (`nome`, `idUsuario`) VALUES
