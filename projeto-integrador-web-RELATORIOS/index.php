@@ -21,7 +21,7 @@ if (!isset($_SESSION['idUsuario'])) {
     <header>
         <nav id="navMenu">
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
@@ -31,7 +31,7 @@ if (!isset($_SESSION['idUsuario'])) {
                 <li><a>|</a></li>
                 <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
-                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a href="tabelas.php">Tabelas</a></li>
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
                 <li><a>|</a></li>
@@ -42,16 +42,16 @@ if (!isset($_SESSION['idUsuario'])) {
     </header>
 
     <div class="button-container">
-        <a href="contas.html">
+        <a href="contas.php">
             <button class="contas">Contas</button>
         </a>
-        <a href="despesas.html">
+        <a href="despesas.php">
             <button class="despesas">Despesas</button>
         </a>
-        <a href="formaPagamento.html">
+        <a href="formaPagamento.php">
             <button class="formas-pagamento">Formas de Pagamento</button>
         </a>
-        <a href="categorias.html">
+        <a href="categorias.php">
             <button class="categorias">Categorias</button>
         </a>
         </div>

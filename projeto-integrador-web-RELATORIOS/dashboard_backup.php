@@ -17,38 +17,18 @@ if (!isset($pdo)) {
     die("Erro: A conexão não foi estabelecida.");
 }
 
-// Configurações comuns para ambos os gráficos
+// Configurações comuns para todos os gráficos
 $contaModel = new Conta($pdo);
 $categoriaModel = new Categoria($pdo);
 $formaPagamentoModel = new FormaPagamento($pdo);
 $nomesCategorias = $categoriaModel->getNomesComIds();
 
-// Funções para o gráfico anual
-function obterAnosDisponiveis($pdo, $usuarioId) {
-    $sql = "SELECT YEAR(MIN(dataPagamento)) as min_year, YEAR(MAX(dataPagamento)) as max_year 
-            FROM (
-                SELECT dataPagamento FROM conta WHERE idUsuario = :usuarioId
-                UNION ALL
-                SELECT dataPagamento FROM despesa WHERE idUsuario = :usuarioId
-            ) as datas";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    $anos = [];
-    if ($result['min_year']) {
-        for ($i = $result['min_year']; $i <= $result['max_year']; $i++) {
-            $anos[] = $i;
-        }
-    } else {
-        $anos[] = date('Y');
-    }
-    
-    return $anos;
-}
+// Configura os períodos atuais
+$anoAtual = date('Y');
+$mesAtual = date('Y-m');
+$tipoGasto = 'todos'; // Padrão para mostrar todos os gastos
 
+// Funções para o gráfico anual
 function buscarGastosMensais($pdo, $usuarioId, $ano, $tipo) {
     $dataInicio = "$ano-01-01";
     $dataFim = "$ano-12-31";
@@ -86,6 +66,52 @@ function buscarGastosMensais($pdo, $usuarioId, $ano, $tipo) {
         
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $resultado[$row['mes']] += $row['total'];
+        }
+    }
+    
+    return $resultado;
+}
+
+// Funções para o gráfico mensal
+function buscarGastosDiarios($pdo, $usuarioId, $mes, $tipo) {
+    $dataInicio = "$mes-01";
+    $ultimoDia = date('t', strtotime($dataInicio));
+    $dataFim = "$mes-$ultimoDia";
+    
+    $diasNoMes = range(1, $ultimoDia);
+    $resultado = array_fill_keys($diasNoMes, 0);
+    
+    if ($tipo == 'todos' || $tipo == 'contas') {
+        $sql = "SELECT DAY(dataPagamento) as dia, SUM(valor) as total 
+                FROM conta 
+                WHERE idUsuario = :usuarioId AND dataPagamento BETWEEN :inicio AND :fim
+                GROUP BY dia";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindParam(':inicio', $dataInicio);
+        $stmt->bindParam(':fim', $dataFim);
+        $stmt->execute();
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $resultado[$row['dia']] += $row['total'];
+        }
+    }
+    
+    if ($tipo == 'todos' || $tipo == 'despesas') {
+        $sql = "SELECT DAY(dataPagamento) as dia, SUM(valor) as total 
+                FROM despesa 
+                WHERE idUsuario = :usuarioId AND dataPagamento BETWEEN :inicio AND :fim
+                GROUP BY dia";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindParam(':inicio', $dataInicio);
+        $stmt->bindParam(':fim', $dataFim);
+        $stmt->execute();
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $resultado[$row['dia']] += $row['total'];
         }
     }
     
@@ -185,22 +211,22 @@ function buscarGastosSemanais($pdo, $usuarioId, $dataInicio, $dataFim, $tipo) {
     return $resultadoOrdenado;
 }
 
-// Processa os filtros
-$anoSelecionado = isset($_POST['ano']) ? $_POST['ano'] : date('Y');
-$tipoGasto = isset($_POST['tipoGasto']) ? $_POST['tipoGasto'] : 'todos';
-$anosDisponiveis = obterAnosDisponiveis($pdo, $_SESSION['idUsuario']);
-
-// Dados para o gráfico anual
-$gastosMensais = buscarGastosMensais($pdo, $_SESSION['idUsuario'], $anoSelecionado, $tipoGasto);
+// Busca os dados para os gráficos
+$gastosMensais = buscarGastosMensais($pdo, $_SESSION['idUsuario'], $anoAtual, $tipoGasto);
 $meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 $valoresAnuais = array_values($gastosMensais);
 $totalAnual = array_sum($valoresAnuais);
 
-// Dados para o gráfico semanal
+$gastosDiarios = buscarGastosDiarios($pdo, $_SESSION['idUsuario'], $mesAtual, $tipoGasto);
+$diasMes = array_keys($gastosDiarios);
+$valoresMensais = array_values($gastosDiarios);
+$totalMensal = array_sum($valoresMensais);
+
 $semanaAtual = getSemanaAtual();
 $gastosSemanais = buscarGastosSemanais($pdo, $_SESSION['idUsuario'], $semanaAtual['inicio'], $semanaAtual['fim'], $tipoGasto);
 $diasSemana = array_keys($gastosSemanais);
 $valoresSemanais = array_values($gastosSemanais);
+$totalSemanal = array_sum($valoresSemanais);
 ?>
 
 <!DOCTYPE html>
@@ -209,8 +235,9 @@ $valoresSemanais = array_values($gastosSemanais);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Financeiro</title>
+    
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/nav.css">
+  
     <link rel="stylesheet" href="css/dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -244,31 +271,6 @@ $valoresSemanais = array_values($gastosSemanais);
             padding: 20px;
         }
         
-        .filtro-container {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filtro-container select, .filtro-container button {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        
-        .filtro-container button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .filtro-container button:hover {
-            background-color: #45a049;
-        }
-        
         .grafico-wrapper {
             position: relative;
             height: 60vh;
@@ -287,7 +289,7 @@ $valoresSemanais = array_values($gastosSemanais);
             text-align: center;
         }
         
-        .info-semana {
+        .info-periodo {
             margin-bottom: 15px;
             font-style: italic;
             color: #555;
@@ -337,7 +339,7 @@ $valoresSemanais = array_values($gastosSemanais);
             background-color: #4CAF50;
         }
         
-        h2 {
+        h1, h2 {
             color: #333;
             margin-bottom: 20px;
         }
@@ -347,7 +349,7 @@ $valoresSemanais = array_values($gastosSemanais);
     <header>
         <nav id="navMenu">
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
@@ -357,11 +359,9 @@ $valoresSemanais = array_values($gastosSemanais);
                 <li><a>|</a></li>
                 <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
-                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a href="tabelas.php">Tabelas</a></li>
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
-                <li><a>|</a></li>
-                <li><a href="dashboard.php" class="active">Dashboard</a></li>
                 <li><a>|</a></li>
                 <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
@@ -369,27 +369,7 @@ $valoresSemanais = array_values($gastosSemanais);
     </header>
 
     <div class="dashboard-container">
-        <h1>Dashboard Financeiro</h1>
-        
-        <form method="POST" class="filtro-container">
-            <label for="ano">Ano:</label>
-            <select id="ano" name="ano">
-                <?php foreach ($anosDisponiveis as $ano): ?>
-                    <option value="<?= $ano ?>" <?= ($ano == $anoSelecionado) ? 'selected' : '' ?>>
-                        <?= $ano ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            
-            <label for="tipoGasto">Tipo de Gasto:</label>
-            <select id="tipoGasto" name="tipoGasto">
-                <option value="todos" <?= ($tipoGasto == 'todos') ? 'selected' : '' ?>>Total (Contas + Despesas)</option>
-                <option value="contas" <?= ($tipoGasto == 'contas') ? 'selected' : '' ?>>Apenas Contas</option>
-                <option value="despesas" <?= ($tipoGasto == 'despesas') ? 'selected' : '' ?>>Apenas Despesas</option>
-            </select>
-            
-            <button type="submit">Aplicar Filtros</button>
-        </form>
+        <h1>Bem vindo(a), <?= isset($_SESSION['nome']) ? $_SESSION['nome'] : 'Usuário' ?></h1>
         
         <div class="carrossel">
             <div class="slides">
@@ -397,28 +377,48 @@ $valoresSemanais = array_values($gastosSemanais);
                 <div class="slide">
                     <div class="grafico-container">
                         <h2>Gráfico Anual de Gastos</h2>
-                        <button id="alternarGraficoAnual" class="alternar-grafico">Alternar para Gráfico de Pizza</button>
+                        <div class="info-periodo">Ano: <?= $anoAtual ?></div>
                         
                         <div class="grafico-wrapper">
                             <canvas id="graficoAnual"></canvas>
                         </div>
                         
                         <div class="info-total">
-                            Total anual (<?= $anoSelecionado ?>): R$ <?= number_format($totalAnual, 2, ',', '.') ?>
+                            Total anual: R$ <?= number_format($totalAnual, 2, ',', '.') ?>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Slide 2 - Gráfico Semanal -->
+                <!-- Slide 2 - Gráfico Mensal -->
+                <div class="slide">
+                    <div class="grafico-container">
+                        <h2>Gráfico Mensal de Gastos</h2>
+                        <div class="info-periodo">Mês: <?= date('F Y', strtotime($mesAtual . '-01')) ?></div>
+                        
+                        <div class="grafico-wrapper">
+                            <canvas id="graficoMensal"></canvas>
+                        </div>
+                        
+                        <div class="info-total">
+                            Total mensal: R$ <?= number_format($totalMensal, 2, ',', '.') ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3 - Gráfico Semanal -->
                 <div class="slide">
                     <div class="grafico-container">
                         <h2>Gráfico Semanal de Gastos</h2>
-                        <div class="info-semana">
+                        <div class="info-periodo">
                             Semana de <?= date('d/m/Y', strtotime($semanaAtual['inicio'])) ?> a <?= date('d/m/Y', strtotime($semanaAtual['fim'])) ?>
                         </div>
                         
                         <div class="grafico-wrapper">
                             <canvas id="graficoSemanal"></canvas>
+                        </div>
+                        
+                        <div class="info-total">
+                            Total semanal: R$ <?= number_format($totalSemanal, 2, ',', '.') ?>
                         </div>
                     </div>
                 </div>
@@ -432,6 +432,7 @@ $valoresSemanais = array_values($gastosSemanais);
             <div class="indicadores">
                 <div class="indicador ativo" data-slide="0"></div>
                 <div class="indicador" data-slide="1"></div>
+                <div class="indicador" data-slide="2"></div>
             </div>
         </div>
     </div>
@@ -446,7 +447,6 @@ $valoresSemanais = array_values($gastosSemanais);
         function atualizarCarrossel() {
             slides.style.transform = `translateX(-${slideAtual * 100}%)`;
             
-            // Atualiza indicadores
             indicadores.forEach((indicador, index) => {
                 if (index === slideAtual) {
                     indicador.classList.add('ativo');
@@ -466,7 +466,6 @@ $valoresSemanais = array_values($gastosSemanais);
             atualizarCarrossel();
         });
         
-        // Permite clicar nos indicadores
         indicadores.forEach(indicador => {
             indicador.addEventListener('click', () => {
                 slideAtual = parseInt(indicador.getAttribute('data-slide'));
@@ -477,54 +476,39 @@ $valoresSemanais = array_values($gastosSemanais);
         // Dados para os gráficos
         const meses = <?= json_encode($meses) ?>;
         const valoresAnuais = <?= json_encode($valoresAnuais) ?>;
-        const diasSemana = <?= json_encode($diasSemana) ?>;
-        const valoresSemanais = <?= json_encode($valoresSemanais) ?>;
-        const tipoGasto = '<?= $tipoGasto ?>';
         const totalAnual = <?= $totalAnual ?>;
         
+        const diasMes = <?= json_encode($diasMes) ?>;
+        const valoresMensais = <?= json_encode($valoresMensais) ?>;
+        const totalMensal = <?= $totalMensal ?>;
+        
+        const diasSemana = <?= json_encode($diasSemana) ?>;
+        const valoresSemanais = <?= json_encode($valoresSemanais) ?>;
+        const totalSemanal = <?= $totalSemanal ?>;
+        
         // Cores para os gráficos
-        const cores = [
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 206, 86, 0.7)',
-            'rgba(75, 192, 192, 0.7)',
-            'rgba(153, 102, 255, 0.7)',
-            'rgba(255, 159, 64, 0.7)',
-            'rgba(199, 199, 199, 0.7)',
-            'rgba(83, 102, 255, 0.7)',
-            'rgba(40, 159, 64, 0.7)',
-            'rgba(210, 99, 132, 0.7)',
-            'rgba(120, 162, 235, 0.7)',
-            'rgba(255, 206, 86, 0.7)'
-        ];
+        const corContas = 'rgba(54, 162, 235, 0.7)';
+        const corDespesas = 'rgba(255, 99, 132, 0.7)';
+        const corTodos = 'rgba(75, 192, 192, 0.7)';
         
         // Configuração do gráfico anual
-        let tipoGraficoAnual = 'bar';
         const ctxAnual = document.getElementById('graficoAnual').getContext('2d');
-        let chartAnual = new Chart(ctxAnual, {
-            type: tipoGraficoAnual,
+        const chartAnual = new Chart(ctxAnual, {
+            type: 'bar',
             data: {
                 labels: meses,
                 datasets: [{
-                    label: `Gastos em ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
+                    label: 'Gastos Totais',
                     data: valoresAnuais,
-                    backgroundColor: tipoGraficoAnual === 'bar' ? 
-                        (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' : 
-                         tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' : 
-                         'rgba(75, 192, 192, 0.7)') : 
-                        cores,
-                    borderColor: tipoGraficoAnual === 'bar' ? 
-                        (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' : 
-                         tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' : 
-                         'rgba(75, 192, 192, 1)') : 
-                        cores.map(c => c.replace('0.7', '1')),
+                    backgroundColor: corTodos,
+                    borderColor: corTodos.replace('0.7', '1'),
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: tipoGraficoAnual === 'bar' ? {
+                scales: {
                     y: {
                         beginAtZero: true,
                         title: {
@@ -543,7 +527,7 @@ $valoresSemanais = array_values($gastosSemanais);
                             text: 'Meses'
                         }
                     }
-                } : {},
+                },
                 plugins: {
                     tooltip: {
                         callbacks: {
@@ -556,88 +540,63 @@ $valoresSemanais = array_values($gastosSemanais);
                                 ];
                             }
                         }
-                    },
-                    legend: {
-                        display: tipoGraficoAnual === 'pie',
-                        position: 'right'
                     }
                 }
             }
         });
         
-        // Alternar gráfico anual entre barras e pizza
-        document.getElementById('alternarGraficoAnual').addEventListener('click', function() {
-            chartAnual.destroy();
-            
-            tipoGraficoAnual = tipoGraficoAnual === 'bar' ? 'pie' : 'bar';
-            
-            this.textContent = tipoGraficoAnual === 'bar' 
-                ? 'Alternar para Gráfico de Pizza' 
-                : 'Alternar para Gráfico de Barras';
-            
-            chartAnual = new Chart(ctxAnual, {
-                type: tipoGraficoAnual,
-                data: {
-                    labels: meses,
-                    datasets: [{
-                        label: `Gastos em ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
-                        data: valoresAnuais,
-                        backgroundColor: tipoGraficoAnual === 'bar' ? 
-                            (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' : 
-                             tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' : 
-                             'rgba(75, 192, 192, 0.7)') : 
-                            cores,
-                        borderColor: tipoGraficoAnual === 'bar' ? 
-                            (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' : 
-                             tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' : 
-                             'rgba(75, 192, 192, 1)') : 
-                            cores.map(c => c.replace('0.7', '1')),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: tipoGraficoAnual === 'bar' ? {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Valor (R$)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                                }
-                            }
+        // Configuração do gráfico mensal
+        const ctxMensal = document.getElementById('graficoMensal').getContext('2d');
+        const chartMensal = new Chart(ctxMensal, {
+            type: 'bar',
+            data: {
+                labels: diasMes,
+                datasets: [{
+                    label: 'Gastos Diários',
+                    data: valoresMensais,
+                    backgroundColor: corTodos,
+                    borderColor: corTodos.replace('0.7', '1'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Valor (R$)'
                         },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Meses'
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                             }
                         }
-                    } : {},
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const percent = ((value / totalAnual) * 100).toFixed(2);
-                                    return [
-                                        `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
-                                        `Percentual: ${percent}%`
-                                    ];
-                                }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Dias do Mês'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const percent = ((value / totalMensal) * 100).toFixed(2);
+                                return [
+                                    `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
+                                    `Percentual: ${percent}%`
+                                ];
                             }
-                        },
-                        legend: {
-                            display: tipoGraficoAnual === 'pie',
-                            position: 'right'
                         }
                     }
                 }
-            });
+            }
         });
         
         // Configuração do gráfico semanal
@@ -647,14 +606,10 @@ $valoresSemanais = array_values($gastosSemanais);
             data: {
                 labels: diasSemana,
                 datasets: [{
-                    label: `Gastos ${tipoGasto === 'todos' ? 'Totais' : tipoGasto === 'contas' ? 'em Contas' : 'em Despesas'}`,
+                    label: 'Gastos Semanais',
                     data: valoresSemanais,
-                    backgroundColor: tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' : 
-                                     tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' : 
-                                     'rgba(75, 192, 192, 0.7)',
-                    borderColor: tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' : 
-                                 tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' : 
-                                 'rgba(75, 192, 192, 1)',
+                    backgroundColor: corTodos,
+                    borderColor: corTodos.replace('0.7', '1'),
                     borderWidth: 1
                 }]
             },
@@ -685,7 +640,12 @@ $valoresSemanais = array_values($gastosSemanais);
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Total: R$ ' + context.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                                const value = context.raw;
+                                const percent = ((value / totalSemanal) * 100).toFixed(2);
+                                return [
+                                    `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
+                                    `Percentual: ${percent}%`
+                                ];
                             }
                         }
                     }

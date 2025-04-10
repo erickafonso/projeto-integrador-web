@@ -1,8 +1,9 @@
-
 <?php
 session_start();
 
+// Verifica se o usuário está logado
 if (!isset($_SESSION['idUsuario'])) {
+    // Caso não esteja logado, redireciona para a página de login
     header('Location: usuario/login.php');
     exit;
 }
@@ -12,15 +13,14 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/home.css">
-  <link rel="stylesheet" href="css/styles.css"> 
-  
+    <link rel="stylesheet" href="css/inside-pages.css">
+    <link rel="stylesheet" href="css/styles.css">
     <title>Contador de gastos</title>
 </head>
 <body>
-    <header>
+    <header class="categorias">
         <nav id="navMenu">
-            <ul>
+        <ul>
                 <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
@@ -42,18 +42,16 @@ if (!isset($_SESSION['idUsuario'])) {
     </header>
 
     <div class="button-container">
-        <a href="graficos_contas.php">
-            <button class="contas">Graficos das Contas</button>
+        <a href="graficos_categorias.php">
+            <button class="categorias">Seleção de datas</button>
         </a>
-        <a href="graficos_despesas.php">
-            <button class="despesas">Gráficos das Despesas</button>
+        <a href="graficos_evolucao_categorias.php">
+            <button class="categorias">Evolução</button>
         </a>
-        <a href="graficos_formaPagamento.php">
-            <button class="formas-pagamento"> Gráficos das Formas de Pagamento</button>
+        <a href="tabelas_categorias.php">
+            <button class="categorias">Visualização em Tabelas</button>
         </a>
-        <a href="graficos_categorias_list.php">
-            <button class="categorias">Graficos das Categorias</button>
-        </a>
+        
         </div>
         <script>
             window.onload = function () {

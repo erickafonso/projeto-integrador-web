@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <header class="categorias">
         <nav id="navMenu">
         <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
@@ -79,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <li><a>|</a></li>
                 <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
-                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a href="tabelas.php">Tabelas</a></li>
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
                 <li><a>|</a></li>

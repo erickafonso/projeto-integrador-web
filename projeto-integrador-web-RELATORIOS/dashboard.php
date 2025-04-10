@@ -237,14 +237,59 @@ $totalSemanal = array_sum($valoresSemanais);
     <title>Dashboard Financeiro</title>
     
     <link rel="stylesheet" href="css/styles.css">
-  
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .dashboard-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+        }
+        
+        .dashboard-content {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .botoes-rapidos {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .botao-rapido {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+        }
+        
+        .botao-rapido:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        
+        .botao-rapido i {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .graficos-container {
+            flex: 1;
         }
         
         .carrossel {
@@ -343,13 +388,31 @@ $totalSemanal = array_sum($valoresSemanais);
             color: #333;
             margin-bottom: 20px;
         }
+       
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .botoes-rapidos {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .botao-rapido {
+                flex: 1 1 200px;
+                height: 100px;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <nav id="navMenu">
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
@@ -359,11 +422,9 @@ $totalSemanal = array_sum($valoresSemanais);
                 <li><a>|</a></li>
                 <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
-                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a href="tabelas.php">Tabelas</a></li>
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
-                <li><a>|</a></li>
-                <li><a href="dashboard.php" class="active">Dashboard</a></li>
                 <li><a>|</a></li>
                 <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
@@ -373,68 +434,96 @@ $totalSemanal = array_sum($valoresSemanais);
     <div class="dashboard-container">
         <h1>Bem vindo(a), <?= isset($_SESSION['nome']) ? $_SESSION['nome'] : 'Usuário' ?></h1>
         
-        <div class="carrossel">
-            <div class="slides">
-                <!-- Slide 1 - Gráfico Anual -->
-                <div class="slide">
-                    <div class="grafico-container">
-                        <h2>Gráfico Anual de Gastos</h2>
-                        <div class="info-periodo">Ano: <?= $anoAtual ?></div>
-                        
-                        <div class="grafico-wrapper">
-                            <canvas id="graficoAnual"></canvas>
-                        </div>
-                        
-                        <div class="info-total">
-                            Total anual: R$ <?= number_format($totalAnual, 2, ',', '.') ?>
-                        </div>
-                    </div>
-                </div>
+        <div class="dashboard-content">
+            <!-- Coluna dos botões rápidos -->
+            <div class="botoes-rapidos">
+                <button class="botao-rapido" onclick="window.location.href='graficos.php'">
+                    <i class="fas fa-chart-line"></i>
+                    Outros Gráficos
+                </button>
                 
-                <!-- Slide 2 - Gráfico Mensal -->
-                <div class="slide">
-                    <div class="grafico-container">
-                        <h2>Gráfico Mensal de Gastos</h2>
-                        <div class="info-periodo">Mês: <?= date('F Y', strtotime($mesAtual . '-01')) ?></div>
-                        
-                        <div class="grafico-wrapper">
-                            <canvas id="graficoMensal"></canvas>
-                        </div>
-                        
-                        <div class="info-total">
-                            Total mensal: R$ <?= number_format($totalMensal, 2, ',', '.') ?>
-                        </div>
-                    </div>
-                </div>
+                <button class="botao-rapido" onclick="window.location.href='index.php?acao=novo'">
+                    <i class="fas fa-plus-circle"></i>
+                    Explorar
+                </button>
                 
-                <!-- Slide 3 - Gráfico Semanal -->
-                <div class="slide">
-                    <div class="grafico-container">
-                        <h2>Gráfico Semanal de Gastos</h2>
-                        <div class="info-periodo">
-                            Semana de <?= date('d/m/Y', strtotime($semanaAtual['inicio'])) ?> a <?= date('d/m/Y', strtotime($semanaAtual['fim'])) ?>
-                        </div>
-                        
-                        <div class="grafico-wrapper">
-                            <canvas id="graficoSemanal"></canvas>
-                        </div>
-                        
-                        <div class="info-total">
-                            Total semanal: R$ <?= number_format($totalSemanal, 2, ',', '.') ?>
-                        </div>
-                    </div>
-                </div>
+                <button class="botao-rapido" onclick="window.location.href='novo_gasto.php?acao=novo'">
+                    <i class="fas fa-plus-circle"></i>
+                    Registrar Novo Gasto
+                </button>
+
+                <button class="botao-rapido" onclick="window.location.href='tabelas.php'">
+                    <i class="fas fa-chart-pie"></i>
+                    Mais Relatórios
+                </button>
             </div>
             
-            <div class="carrossel-navegacao">
-                <button class="carrossel-btn" id="btnAnterior">&#10094;</button>
-                <button class="carrossel-btn" id="btnProximo">&#10095;</button>
-            </div>
-            
-            <div class="indicadores">
-                <div class="indicador ativo" data-slide="0"></div>
-                <div class="indicador" data-slide="1"></div>
-                <div class="indicador" data-slide="2"></div>
+            <!-- Container dos gráficos -->
+            <div class="graficos-container">
+                <div class="carrossel">
+                    <div class="slides">
+                        <!-- Slide 1 - Gráfico Anual -->
+                        <div class="slide">
+                            <div class="grafico-container">
+                                <h2>Gráfico Anual de Gastos</h2>
+                                <div class="info-periodo">Ano: <?= $anoAtual ?></div>
+                                
+                                <div class="grafico-wrapper">
+                                    <canvas id="graficoAnual"></canvas>
+                                </div>
+                                
+                                <div class="info-total">
+                                    Total anual: R$ <?= number_format($totalAnual, 2, ',', '.') ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide 2 - Gráfico Mensal -->
+                        <div class="slide">
+                            <div class="grafico-container">
+                                <h2>Gráfico Mensal de Gastos</h2>
+                                <div class="info-periodo">Mês: <?= date('F Y', strtotime($mesAtual . '-01')) ?></div>
+                                
+                                <div class="grafico-wrapper">
+                                    <canvas id="graficoMensal"></canvas>
+                                </div>
+                                
+                                <div class="info-total">
+                                    Total mensal: R$ <?= number_format($totalMensal, 2, ',', '.') ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide 3 - Gráfico Semanal -->
+                        <div class="slide">
+                            <div class="grafico-container">
+                                <h2>Gráfico Semanal de Gastos</h2>
+                                <div class="info-periodo">
+                                    Semana de <?= date('d/m/Y', strtotime($semanaAtual['inicio'])) ?> a <?= date('d/m/Y', strtotime($semanaAtual['fim'])) ?>
+                                </div>
+                                
+                                <div class="grafico-wrapper">
+                                    <canvas id="graficoSemanal"></canvas>
+                                </div>
+                                
+                                <div class="info-total">
+                                    Total semanal: R$ <?= number_format($totalSemanal, 2, ',', '.') ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="carrossel-navegacao">
+                        <button class="carrossel-btn" id="btnAnterior">&#10094;</button>
+                        <button class="carrossel-btn" id="btnProximo">&#10095;</button>
+                    </div>
+                    
+                    <div class="indicadores">
+                        <div class="indicador ativo" data-slide="0"></div>
+                        <div class="indicador" data-slide="1"></div>
+                        <div class="indicador" data-slide="2"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -96,7 +96,6 @@ $nomeMes = date('F Y', strtotime($mesSelecionado . '-01'));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gráfico Mensal de Gastos</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/graficos.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -170,7 +169,7 @@ $nomeMes = date('F Y', strtotime($mesSelecionado . '-01'));
     <header>
         <nav id="navMenu">
             <ul>
-                <li><a href="index.php">Home</a></li>
+                <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
                 <li><a>|</a></li>
@@ -180,11 +179,9 @@ $nomeMes = date('F Y', strtotime($mesSelecionado . '-01'));
                 <li><a>|</a></li>
                 <li><a href="categorias.php">Categorias</a></li>
                 <li><a>|</a></li>
-                <li><a href="relatoriosv2.php">Relatórios</a></li>
+                <li><a href="tabelas.php">Tabelas</a></li>
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
-                <li><a>|</a></li>
-                <li><a href="dashboard.php">Dashboard</a></li>
                 <li><a>|</a></li>
                 <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
@@ -228,159 +225,130 @@ $nomeMes = date('F Y', strtotime($mesSelecionado . '-01'));
     </div>
 
     <script>
-        // Dados para o gráfico
-        const dias = <?= json_encode($dias) ?>;
-        const valores = <?= json_encode($valores) ?>;
-        const tipoGasto = '<?= $tipoGasto ?>';
-        const totalMensal = <?= $totalMensal ?>;
-        
-        // Cores para os gráficos
-        const cores = dias.map((_, i) => {
-            const hue = (i * 30) % 360;
-            return `hsla(${hue}, 70%, 60%, 0.7)`;
-        });
-        
-        // Configuração inicial do gráfico (barras)
-        let tipoGraficoAtual = 'bar';
+    // Dados para o gráfico
+    const dias = <?= json_encode($dias) ?>;
+    const valores = <?= json_encode($valores) ?>;
+    const tipoGasto = '<?= $tipoGasto ?>';
+    const totalMensal = <?= $totalMensal ?>;
+    const nomeMes = '<?= $nomeMes ?>';
+    
+    // Cores para os gráficos
+    const cores = Array.from({length: dias.length}, (_, i) => {
+        const hue = (i * 360 / dias.length) % 360;
+        return `hsl(${hue}, 70%, 60%)`;
+    });
+    
+    // Configuração do gráfico
+    let chart;
+    let currentChartType = 'bar';
+    
+    function initChart() {
         const ctx = document.getElementById('graficoMensal').getContext('2d');
-        let chart = new Chart(ctx, {
-            type: tipoGraficoAtual,
-            data: {
-                labels: dias,
-                datasets: [{
-                    label: `Gastos em ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
-                    data: valores,
-                    backgroundColor: tipoGraficoAtual === 'bar' ? 
-                        (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' : 
-                         tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' : 
-                         'rgba(75, 192, 192, 0.7)') : 
-                        cores,
-                    borderColor: tipoGraficoAtual === 'bar' ? 
-                        (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' : 
-                         tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' : 
-                         'rgba(75, 192, 192, 1)') : 
-                        cores.map(c => c.replace('0.7', '1')),
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: tipoGraficoAtual === 'bar' ? {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Valor (R$)'
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                            }
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Dias do Mês'
+        
+        // Configurações comuns
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw;
+                            const percent = context.dataset.data.length > 1 ? 
+                                (value / context.dataset.data.reduce((a, b) => a + b, 0) * 100).toFixed(2) + '%' : '100%';
+                            return `${label}: R$ ${value.toFixed(2)} (${percent})`;
                         }
                     }
-                } : {},
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const value = context.raw;
-                                const percent = totalMensal > 0 ? ((value / totalMensal) * 100).toFixed(2) : 0;
-                                return [
-                                    `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
-                                    `Percentual: ${percent}%`
-                                ];
-                            }
-                        }
-                    },
-                    legend: {
-                        display: tipoGraficoAtual === 'pie',
-                        position: 'right'
+                },
+                legend: {
+                    display: currentChartType === 'pie',
+                    position: 'right'
+                },
+                title: {
+                    display: true,
+                    text: `Gastos em ${nomeMes} - ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
+                    font: {
+                        size: 16
                     }
                 }
             }
-        });
+        };
         
-        // Função para alternar entre gráfico de barras e pizza
-        document.getElementById('alternarGrafico').addEventListener('click', function() {
-            chart.destroy();
-            
-            tipoGraficoAtual = tipoGraficoAtual === 'bar' ? 'pie' : 'bar';
-            
-            this.textContent = tipoGraficoAtual === 'bar' 
-                ? 'Alternar para Gráfico de Pizza' 
-                : 'Alternar para Gráfico de Barras';
-            
-            chart = new Chart(ctx, {
-                type: tipoGraficoAtual,
-                data: {
-                    labels: dias,
-                    datasets: [{
-                        label: `Gastos em ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
-                        data: valores,
-                        backgroundColor: tipoGraficoAtual === 'bar' ? 
-                            (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' : 
-                             tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' : 
-                             'rgba(75, 192, 192, 0.7)') : 
-                            cores,
-                        borderColor: tipoGraficoAtual === 'bar' ? 
-                            (tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' : 
-                             tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' : 
-                             'rgba(75, 192, 192, 1)') : 
-                            cores.map(c => c.replace('0.7', '1')),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: tipoGraficoAtual === 'bar' ? {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Valor (R$)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                                }
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Dias do Mês'
-                            }
-                        }
-                    } : {},
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const percent = totalMensal > 0 ? ((value / totalMensal) * 100).toFixed(2) : 0;
-                                    return [
-                                        `Valor: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`,
-                                        `Percentual: ${percent}%`
-                                    ];
-                                }
-                            }
-                        },
-                        legend: {
-                            display: tipoGraficoAtual === 'pie',
-                            position: 'right'
+        // Configurações específicas para barras
+        if (currentChartType === 'bar') {
+            commonOptions.scales = {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Valor (R$)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(2);
                         }
                     }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dias do Mês'
+                    }
                 }
-            });
+            };
+        }
+        
+        // Destruir gráfico existente
+        if (chart) {
+            chart.destroy();
+        }
+        
+        // Preparar dados para o tipo de gráfico
+        const labels = currentChartType === 'pie' ? 
+            dias.map(dia => `Dia ${dia}`) : 
+            dias;
+        
+        const backgroundColors = currentChartType === 'pie' ? 
+            cores : 
+            tipoGasto === 'contas' ? 'rgba(54, 162, 235, 0.7)' :
+            tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 0.7)' :
+            'rgba(75, 192, 192, 0.7)';
+        
+        // Criar novo gráfico
+        chart = new Chart(ctx, {
+            type: currentChartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Gastos em ${tipoGasto === 'todos' ? 'Total' : tipoGasto === 'contas' ? 'Contas' : 'Despesas'}`,
+                    data: valores,
+                    backgroundColor: backgroundColors,
+                    borderColor: currentChartType === 'pie' ? 
+                        cores.map(c => c.replace('hsl', 'hsla').replace(')', ', 1)')) :
+                        tipoGasto === 'contas' ? 'rgba(54, 162, 235, 1)' :
+                        tipoGasto === 'despesas' ? 'rgba(255, 99, 132, 1)' :
+                        'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: commonOptions
         });
-    </script>
+    }
+    
+    // Inicializar gráfico quando a página carrega
+    document.addEventListener('DOMContentLoaded', function() {
+        initChart();
+        
+        // Alternar entre gráficos
+        document.getElementById('alternarGrafico').addEventListener('click', function() {
+            currentChartType = currentChartType === 'bar' ? 'pie' : 'bar';
+            this.textContent = currentChartType === 'bar' 
+                ? 'Alternar para Gráfico de Pizza' 
+                : 'Alternar para Gráfico de Barras';
+            initChart();
+        });
+    });
+</script>
 </body>
 </html>

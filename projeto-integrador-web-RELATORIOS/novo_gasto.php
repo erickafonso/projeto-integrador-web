@@ -42,18 +42,13 @@ if (!isset($_SESSION['idUsuario'])) {
     </header>
 
     <div class="button-container">
-        <a href="graficos_contas.php">
-            <button class="contas">Graficos das Contas</button>
+        <a href="cadastro-conta.php">
+            <button class="contas">Nova Conta</button>
         </a>
-        <a href="graficos_despesas.php">
-            <button class="despesas">Gráficos das Despesas</button>
+        <a href="cadastro-despesa.php">
+            <button class="despesas">Nova Despesa</button>
         </a>
-        <a href="graficos_formaPagamento.php">
-            <button class="formas-pagamento"> Gráficos das Formas de Pagamento</button>
-        </a>
-        <a href="graficos_categorias_list.php">
-            <button class="categorias">Graficos das Categorias</button>
-        </a>
+        
         </div>
         <script>
             window.onload = function () {
