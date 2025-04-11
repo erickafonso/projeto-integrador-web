@@ -130,12 +130,79 @@ $conn->close();
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/alteracoes.css">
     <link rel="stylesheet" href="css/tabelas.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <title>Relatório de Contas</title>
+    <style>
+        /* Estilo específico para o cabeçalho da tabela de contas */
+        .table-container table thead th {
+            background-color: #303030 !important;
+            color: #fff !important;
+            border-bottom: 2px solid #444 !important;
+        }
+        
+        /* Estilos para os botões de exportação */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .button-group button {
+            flex: 1;
+        }
+        
+        .exportar-btn {
+            background-color: #303030;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .exportar-btn:hover {
+            background-color: #202020;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+        
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav id="navMenu">
-        <ul>
+            <ul>
                 <li><a href="dashboard.php">Inicio</a></li>
                 <li><a>|</a></li>
                 <li><a href="contas.php">Contas</a></li>
@@ -150,7 +217,6 @@ $conn->close();
                 <li><a>|</a></li>
                 <li><a href="graficos.php">Gráficos</a></li>
                 <li><a>|</a></li>
-                <!-- Botão Sair com class 'logout' -->
                 <li><a href="logout.php" class="logout">Sair</a></li>
             </ul>
         </nav>
@@ -161,7 +227,7 @@ $conn->close();
         <form action="" method="post">
             <div class="form-group">
                 <label for="nome">Pesquisar por nome:</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($filtro_nome); ?>" placeholder="Digite o nome da conta/despesa">
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($filtro_nome); ?>" placeholder="Digite o nome da conta">
             </div>
             
             <div class="form-group">
@@ -169,49 +235,62 @@ $conn->close();
                 <select id="categoria" name="categoria">
                     <option value="">Selecione uma categoria</option>
                     <?php foreach ($categorias as $cat): ?>
-                        <option value="<?php echo $cat['idCategoria']; ?>" <?php echo ($filtro_categoria == $cat['idCategoria']) ? 'selected' : ''; ?>><?php echo $cat['nome']; ?></option>
+                        <option value="<?php echo $cat['idCategoria']; ?>" <?php echo ($filtro_categoria == $cat['idCategoria']) ? 'selected' : ''; ?>>
+                            <?php echo $cat['nome']; ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
+            
             <div class="form-group">
                 <label for="forma-pagamento">Forma de Pagamento:</label>
                 <select id="forma-pagamento" name="forma_pagamento">
                     <option value="">Selecione uma forma de pagamento</option>
                     <?php foreach ($formas_pagamento as $fp): ?>
-                        <option value="<?php echo $fp['idFormaPagamento']; ?>" <?php echo ($filtro_forma_pagamento == $fp['idFormaPagamento']) ? 'selected' : ''; ?>><?php echo $fp['nome']; ?></option>
+                        <option value="<?php echo $fp['idFormaPagamento']; ?>" <?php echo ($filtro_forma_pagamento == $fp['idFormaPagamento']) ? 'selected' : ''; ?>>
+                            <?php echo $fp['nome']; ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
+            
             <div class="form-group">
                 <label for="data-inicio">Data Início:</label>
                 <input type="date" id="data-inicio" name="data_inicio" value="<?php echo $filtro_data_inicio; ?>">
             </div>
-
+            
             <div class="form-group">
                 <label for="data-fim">Data Fim:</label>
                 <input type="date" id="data-fim" name="data_fim" value="<?php echo $filtro_data_fim; ?>">
             </div>
-
+            
             <div class="form-group">
                 <label for="valor_min">Valor Mínimo:</label>
                 <input type="number" id="valor_min" name="valor_min" step="0.01" min="0" value="<?php echo $filtro_valor_min; ?>" placeholder="Digite o valor mínimo">
             </div>
-
+            
             <div class="form-group">
                 <label for="valor_max">Valor Máximo:</label>
                 <input type="number" id="valor_max" name="valor_max" step="0.01" min="0" value="<?php echo $filtro_valor_max; ?>" placeholder="Digite o valor máximo">
             </div>
-
-            <div class="form-group">
+            
+            <div class="button-group">
                 <button type="submit">Filtrar</button>
+                
+                <div class="dropdown">
+                    <button type="button" class="exportar-btn">Exportar Relatório ▼</button>
+                    <div class="dropdown-content">
+                        <a href="#" id="exportar-pdf">Exportar como PDF</a>
+                        <a href="#" id="exportar-xml">Exportar como XML</a>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
     
     <div class="table-container">
         <h3>Relatório de Contas</h3>
+        
         <?php if ($total_registros > 0): ?>
             <div class="info-paginacao">
                 Exibindo <?php echo min($registros_por_pagina, count($contas)); ?> de <?php echo $total_registros; ?> registros
@@ -252,15 +331,15 @@ $conn->close();
                 </tbody>
             </table>
         </div>
-
+        
         <?php if ($total_paginas > 1): ?>
             <div class="paginacao">
                 <?php if ($pagina_atual > 1): ?>
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['pagina' => 1])); ?>">Primeira</a>
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['pagina' => $pagina_atual - 1])); ?>">Anterior</a>
                 <?php endif; ?>
-
-                <?php
+                
+                <?php 
                 $inicio = max(1, $pagina_atual - 2);
                 $fim = min($total_paginas, $pagina_atual + 2);
                 
@@ -280,7 +359,7 @@ $conn->close();
                     echo '<span>...</span>';
                 }
                 ?>
-
+                
                 <?php if ($pagina_atual < $total_paginas): ?>
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['pagina' => $pagina_atual + 1])); ?>">Próxima</a>
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['pagina' => $total_paginas])); ?>">Última</a>
@@ -288,5 +367,161 @@ $conn->close();
             </div>
         <?php endif; ?>
     </div>
+    
+    <script>
+        document.getElementById('exportar-pdf').addEventListener('click', function() {
+            <?php if (count($contas) > 0): ?>
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Título do relatório
+                doc.setFontSize(18);
+                doc.text('Relatório de Contas', 14, 15);
+                
+                // Informações do período (se filtro de data aplicado)
+                doc.setFontSize(12);
+                <?php if (!empty($filtro_data_inicio) && !empty($filtro_data_fim)): ?>
+                    doc.text(`Período: ${<?= date('d/m/Y', strtotime($filtro_data_inicio)) ?>} a ${<?= date('d/m/Y', strtotime($filtro_data_fim)) ?>}`, 14, 25);
+                <?php endif; ?>
+                
+                // Cabeçalhos da tabela
+                const headers = [
+                    "Nome", 
+                    "Valor (R$)", 
+                    "Descrição", 
+                    "Data Pagamento",
+                    "Data Vencimento", 
+                    "Categoria", 
+                    "Forma Pagamento"
+                ];
+                
+                // Dados da tabela
+                const data = [
+                    <?php foreach ($contas as $conta): ?>
+                        [
+                            "<?= htmlspecialchars($conta['nome'], ENT_QUOTES) ?>", 
+                            "R$ <?= number_format($conta['valor'], 2, ',', '.') ?>", 
+                            "<?= htmlspecialchars($conta['descricao'], ENT_QUOTES) ?>", 
+                            "<?= date('d/m/Y', strtotime($conta['dataPagamento'])) ?>",
+                            "<?= date('d/m/Y', strtotime($conta['dataVencimento'])) ?>", 
+                            "<?= htmlspecialchars($conta['categoria'], ENT_QUOTES) ?>", 
+                            "<?= htmlspecialchars($conta['formaPagamento'], ENT_QUOTES) ?>"
+                        ],
+                    <?php endforeach; ?>
+                ];
+                
+                // Gerar a tabela no PDF
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 30,
+                    styles: {
+                        fontSize: 10,
+                        cellPadding: 3,
+                        valign: 'middle'
+                    },
+                    headStyles: {
+                        fillColor: [48, 48, 48],
+                        textColor: 255,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    margin: { top: 30 }
+                });
+                
+                // Salvar o PDF
+                doc.save('Relatorio_Contas_<?= date('Y-m-d') ?>.pdf');
+            <?php else: ?>
+                alert('Não há dados para exportar!');
+            <?php endif; ?>
+        });
+        
+        document.getElementById('exportar-xml').addEventListener('click', function() {
+            <?php if (count($contas) > 0): ?>
+                let xml = '<' + '?xml version="1.0" encoding="UTF-8"?>' + '\n';
+                xml += '<relatorio>\n';
+                
+                // Adicionar informações de filtro (se aplicado)
+                xml += '    <filtros>\n';
+                <?php if (!empty($filtro_nome)): ?>
+                    xml += '        <nome><?= htmlspecialchars($filtro_nome, ENT_QUOTES) ?></nome>\n';
+                <?php endif; ?>
+                
+                <?php if (!empty($filtro_categoria)): ?>
+                    <?php 
+                    $categoria_nome = '';
+                    foreach ($categorias as $cat) {
+                        if ($cat['idCategoria'] == $filtro_categoria) {
+                            $categoria_nome = $cat['nome'];
+                            break;
+                        }
+                    }
+                    ?>
+                    xml += '        <categoria><?= htmlspecialchars($categoria_nome, ENT_QUOTES) ?></categoria>\n';
+                <?php endif; ?>
+                
+                <?php if (!empty($filtro_forma_pagamento)): ?>
+                    <?php 
+                    $forma_pagamento_nome = '';
+                    foreach ($formas_pagamento as $fp) {
+                        if ($fp['idFormaPagamento'] == $filtro_forma_pagamento) {
+                            $forma_pagamento_nome = $fp['nome'];
+                            break;
+                        }
+                    }
+                    ?>
+                    xml += '        <forma_pagamento><?= htmlspecialchars($forma_pagamento_nome, ENT_QUOTES) ?></forma_pagamento>\n';
+                <?php endif; ?>
+                
+                <?php if (!empty($filtro_data_inicio) && !empty($filtro_data_fim)): ?>
+                    xml += '        <periodo>\n';
+                    xml += '            <inicio><?= date('d/m/Y', strtotime($filtro_data_inicio)) ?></inicio>\n';
+                    xml += '            <fim><?= date('d/m/Y', strtotime($filtro_data_fim)) ?></fim>\n';
+                    xml += '        </periodo>\n';
+                <?php endif; ?>
+                
+                <?php if (!empty($filtro_valor_min)): ?>
+                    xml += '        <valor_minimo><?= $filtro_valor_min ?></valor_minimo>\n';
+                <?php endif; ?>
+                
+                <?php if (!empty($filtro_valor_max)): ?>
+                    xml += '        <valor_maximo><?= $filtro_valor_max ?></valor_maximo>\n';
+                <?php endif; ?>
+                xml += '    </filtros>\n';
+                
+                // Adicionar dados das contas
+                xml += '    <dados>\n';
+                <?php foreach ($contas as $conta): ?>
+                    xml += '        <conta>\n';
+                    xml += '            <nome><?= htmlspecialchars($conta['nome'], ENT_QUOTES) ?></nome>\n';
+                    xml += '            <valor><?= number_format($conta['valor'], 2, '.', '') ?></valor>\n';
+                    xml += '            <descricao><?= htmlspecialchars($conta['descricao'], ENT_QUOTES) ?></descricao>\n';
+                    xml += '            <data_pagamento><?= date('d/m/Y', strtotime($conta['dataPagamento'])) ?></data_pagamento>\n';
+                    xml += '            <data_vencimento><?= date('d/m/Y', strtotime($conta['dataVencimento'])) ?></data_vencimento>\n';
+                    xml += '            <categoria><?= htmlspecialchars($conta['categoria'], ENT_QUOTES) ?></categoria>\n';
+                    xml += '            <forma_pagamento><?= htmlspecialchars($conta['formaPagamento'], ENT_QUOTES) ?></forma_pagamento>\n';
+                    xml += '        </conta>\n';
+                <?php endforeach; ?>
+                xml += '    </dados>\n';
+                
+                xml += '</relatorio>';
+                
+                // Criar e baixar o arquivo XML
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Relatorio_Contas_<?= date('Y-m-d') ?>.xml';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            <?php else: ?>
+                alert('Não há dados para exportar!');
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html>

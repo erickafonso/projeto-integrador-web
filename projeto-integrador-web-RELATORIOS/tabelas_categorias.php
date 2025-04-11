@@ -75,6 +75,13 @@ function gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor, $o
 }
 
 $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor, $ordem);
+
+$totalGeral = 0;
+$quantidadeGeral = 0;
+foreach ($relatorio as $linha) {
+    $totalGeral += $linha['total'];
+    $quantidadeGeral += $linha['quantidade'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -87,6 +94,8 @@ $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/alteracoes.css">
     <link rel="stylesheet" href="css/tabelas.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         body {
             padding-top: 80px;
@@ -158,6 +167,53 @@ $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor
         
         .filtro-btn:hover {
             background-color: #45a049;
+        }
+        
+        .exportar-container {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .exportar-btn {
+            background-color: #303030;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .exportar-btn:hover {
+            background-color: #202020;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+        
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
         
         .info-periodo {
@@ -259,6 +315,16 @@ $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor
                 </div>
                 
                 <button type="submit" class="filtro-btn">Gerar Relatório</button>
+                
+                <div class="exportar-container">
+                    <div class="dropdown">
+                        <button type="button" class="exportar-btn">Exportar Relatório ▼</button>
+                        <div class="dropdown-content">
+                            <a href="#" id="exportar-pdf">Exportar como PDF</a>
+                            <a href="#" id="exportar-xml">Exportar como XML</a>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
         
@@ -280,14 +346,7 @@ $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor
                             </tr>
                         </thead>
                         <tbody>
-                            <?php 
-                            $totalGeral = 0;
-                            $quantidadeGeral = 0;
-                            
-                            foreach ($relatorio as $linha): 
-                                $totalGeral += $linha['total'];
-                                $quantidadeGeral += $linha['quantidade'];
-                            ?>
+                            <?php foreach ($relatorio as $linha): ?>
                                 <tr>
                                     <td><?= htmlspecialchars($linha['categoria']) ?></td>
                                     <td>R$ <?= number_format($linha['total'], 2, ',', '.') ?></td>
@@ -310,5 +369,109 @@ $relatorio = gerarRelatorio($pdo, $usuarioId, $dataInicio, $dataFim, $ordenarPor
             <?php endif; ?>
         </div>
     </div>
+
+    <script>
+        document.getElementById('exportar-pdf').addEventListener('click', function() {
+            <?php if (count($relatorio) > 0): ?>
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(18);
+                doc.text('Relatório de Gastos por Categoria', 14, 15);
+                
+                doc.setFontSize(12);
+                doc.text('Período: <?= date('d/m/Y', strtotime($dataInicio)) ?> a <?= date('d/m/Y', strtotime($dataFim)) ?>', 14, 25);
+                
+                const headers = [
+                    "Categoria", 
+                    "Valor Gasto (R$)", 
+                    "Quantidade", 
+                    "Última Data"
+                ];
+                
+                const data = [
+                    <?php foreach ($relatorio as $linha): ?>
+                        [
+                            "<?= htmlspecialchars($linha['categoria'], ENT_QUOTES) ?>", 
+                            "R$ <?= number_format($linha['total'], 2, ',', '.') ?>", 
+                            "<?= $linha['quantidade'] ?>", 
+                            "<?= $linha['ultima_data'] != '0000-00-00' ? date('d/m/Y', strtotime($linha['ultima_data'])) : '-' ?>"
+                        ],
+                    <?php endforeach; ?>
+                    [
+                        "TOTAL GERAL", 
+                        "R$ <?= number_format($totalGeral, 2, ',', '.') ?>", 
+                        "<?= $quantidadeGeral ?>", 
+                        ""
+                    ]
+                ];
+                
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 30,
+                    styles: {
+                        fontSize: 10,
+                        cellPadding: 3,
+                        valign: 'middle'
+                    },
+                    headStyles: {
+                        fillColor: [48, 48, 48],
+                        textColor: 255,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    margin: { top: 30 }
+                });
+                
+                doc.save('Relatorio_Categorias_<?= date('Y-m-d') ?>.pdf');
+            <?php else: ?>
+                alert('Não há dados para exportar!');
+            <?php endif; ?>
+        });
+        
+        document.getElementById('exportar-xml').addEventListener('click', function() {
+            <?php if (count($relatorio) > 0): ?>
+                let xml = '<' + '?xml version="1.0" encoding="UTF-8"?>' + '\n';
+                xml += '<relatorio>\n';
+                xml += '    <periodo>\n';
+                xml += '        <inicio><?= date('d/m/Y', strtotime($dataInicio)) ?></inicio>\n';
+                xml += '        <fim><?= date('d/m/Y', strtotime($dataFim)) ?></fim>\n';
+                xml += '    </periodo>\n';
+                xml += '    <dados>\n';
+                
+                <?php foreach ($relatorio as $linha): ?>
+                    xml += '        <categoria>\n';
+                    xml += '            <nome><?= htmlspecialchars($linha['categoria'], ENT_QUOTES) ?></nome>\n';
+                    xml += '            <valor><?= number_format($linha['total'], 2, '.', '') ?></valor>\n';
+                    xml += '            <quantidade><?= $linha['quantidade'] ?></quantidade>\n';
+                    xml += '            <ultima_data><?= $linha['ultima_data'] != '0000-00-00' ? date('d/m/Y', strtotime($linha['ultima_data'])) : '' ?></ultima_data>\n';
+                    xml += '        </categoria>\n';
+                <?php endforeach; ?>
+                
+                xml += '        <total>\n';
+                xml += '            <valor><?= number_format($totalGeral, 2, '.', '') ?></valor>\n';
+                xml += '            <quantidade><?= $quantidadeGeral ?></quantidade>\n';
+                xml += '        </total>\n';
+                
+                xml += '    </dados>\n';
+                xml += '</relatorio>';
+                
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Relatorio_Categorias_<?= date('Y-m-d') ?>.xml';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            <?php else: ?>
+                alert('Não há dados para exportar!');
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html>

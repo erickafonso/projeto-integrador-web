@@ -36,7 +36,7 @@ if ($res) {
     $_SESSION['nivel'] = $res['nivel'];
 
     // Redireciona para a página principal após o login
-    header('Location: ../index.php'); 
+    header('Location: ../dashboard.php'); 
     exit;
 } else {
     // Caso o usuário não exista
