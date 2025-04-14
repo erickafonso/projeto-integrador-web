@@ -50,7 +50,9 @@ if($linhas == 0){
             </form>
             <br>
 
-            <p class="recuperar"><a title="Clique para criar usuario" href="" data-bs-toggle="modal" data-bs-target="#exempleModal">Não tenho conta</a></p>
+            <p class="recuperar">
+  <a title="Clique para criar usuário" href="../cadastro_usuario.php">Não tenho conta</a>
+</p>
         </div>
         <!-- fecha a div da class form -->
     </div> 
@@ -58,27 +60,7 @@ if($linhas == 0){
 </body>
 </html>
 
-<!-- Modal  -->
- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel", aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content form">
-            <form method="post" id="form-recuperar">
-                <div class="modal-body">
-                    <form method="post" id="form-recuperar">
-                        <input placeholder="Digite seu email" class="form-control" type="email" name="email" id="email-recuperar" required>
-                        <button type="submit">Não tenho conta</button>
-                    </form>
-                </div>
-                <!-- Fecha a div da class modal-body -->
-                 <br>
-                 <small><div id="mensagem-recuperar" align="center"></div></small>
-            </form>
-        </div>
-        <!-- Fecha a div da class modal-content form -->
-    </div>
-    <!-- Fecha a div da class modal-dialog -->
- </div>
- <!-- Fecha a div da class modal fade -->
+
 
 
  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

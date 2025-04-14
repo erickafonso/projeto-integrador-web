@@ -10,14 +10,14 @@ if (!isset($_SESSION['idUsuario'])) {
 
 include_once('conexao/conexao.php'); 
 
-// Recebe os filtros
-$filtro_categoria = $_POST['categoria'] ?? '';
-$filtro_forma_pagamento = $_POST['forma_pagamento'] ?? '';
-$filtro_data_inicio = $_POST['data_inicio'] ?? '';
-$filtro_data_fim = $_POST['data_fim'] ?? '';
-$filtro_valor_min = $_POST['valor_min'] ?? '';
-$filtro_valor_max = $_POST['valor_max'] ?? '';
-$filtro_nome = $_POST['nome'] ?? '';
+// Recebe os filtros via GET
+$filtro_categoria = $_GET['categoria'] ?? '';
+$filtro_forma_pagamento = $_GET['forma_pagamento'] ?? '';
+$filtro_data_inicio = $_GET['data_inicio'] ?? '';
+$filtro_data_fim = $_GET['data_fim'] ?? '';
+$filtro_valor_min = $_GET['valor_min'] ?? '';
+$filtro_valor_max = $_GET['valor_max'] ?? '';
+$filtro_nome = $_GET['nome'] ?? '';
 
 // Configuração de paginação
 $registros_por_pagina = 20;
@@ -220,7 +220,7 @@ $conn->close();
     
     <div class="form-container" id="formContainer">
         <h2>Relatório de Despesas</h2>
-        <form action="" method="post">
+        <form action="" method="get">
             <div class="form-group">
                 <label for="nome">Pesquisar por nome:</label>
                 <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($filtro_nome); ?>" placeholder="Digite o nome da despesa">

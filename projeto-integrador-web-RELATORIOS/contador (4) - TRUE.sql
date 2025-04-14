@@ -240,3 +240,24 @@ INSERT INTO `despesa` (`nome`, `valor`, `descricao`, `dataPagamento`, `categoria
 ('Curso design Abril 2022', 350.00, 'Curso de design gráfico', '2022-04-20', 4, 1, 2),
 ('Festa aniversário Maio 2022', 600.00, 'Festa de aniversário', '2022-05-25', 5, 6, 2);
 
+INSERT INTO `despesa` (`nome`, `valor`, `descricao`, `dataPagamento`, `categoria`, `formaPagamento`, `idUsuario`) VALUES
+('Padaria', 32.50, 'Café da manhã e pão', '2025-04-14', 1, 1, 1),
+('Uber para trabalho', 45.00, 'Corrida para o escritório', '2025-04-14', 2, 4, 1),
+('Farmácia', 76.30, 'Remédios para gripe', '2025-04-14', 3, 3, 1),
+('Livro de filosofia', 120.00, 'Livro novo para estudos', '2025-04-15', 4, 2, 1),
+('Netflix', 39.90, 'Assinatura mensal', '2025-04-15', 5, 6, 1),
+('Conta de luz', 180.00, 'Energia elétrica', '2025-04-15', 6, 5, 1),
+('Camisa nova', 90.00, 'Roupa social', '2025-04-15', 8, 2, 1),
+('Mercado', 220.00, 'Compras semanais', '2025-04-16', 1, 4, 1),
+('Ônibus ida e volta', 9.00, 'Transporte público', '2025-04-16', 2, 1, 1),
+('Consulta médica', 200.00, 'Especialista', '2025-04-16', 3, 3, 1),
+('Curso de frontend', 300.00, 'Módulo extra', '2025-04-17', 4, 7, 1),
+('Cinema', 50.00, 'Sessão noturna', '2025-04-17', 5, 2, 1),
+('Conta de gás', 140.00, 'Gás encanado', '2025-04-17', 6, 5, 1),
+('Meias e cuecas', 75.00, 'Itens pessoais', '2025-04-17', 8, 4, 1),
+('Almoço delivery', 38.00, 'Comida por aplicativo', '2025-04-18', 1, 1, 1),
+('Passagem intermunicipal', 60.00, 'Viagem curta', '2025-04-18', 2, 3, 1),
+('Exame oftalmológico', 280.00, 'Rotina anual', '2025-04-18', 3, 2, 1),
+('Aula particular', 150.00, 'Refreforço de lógica', '2025-04-19', 4, 4, 1),
+('Teatro', 80.00, 'Ingresso', '2025-04-19', 5, 1, 1),
+('Reparo encanamento', 300.00, 'Serviço de emergência', '2025-04-20', 7, 5, 1);
